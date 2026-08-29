@@ -1,5 +1,3 @@
-from turtle import pd
-
 import matplotlib.pyplot as plt
 
 from datetime import date
