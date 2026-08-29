@@ -26,6 +26,12 @@ st.info(
     "Results are provided for decision-support purposes and should not be considered accounting, legal, tax, or financial advice."
 )
 
+st.caption(
+    "Data handling: Uploaded CSV data is used within the active app session to perform the analysis. "
+    "Hidden Profit Analytics does not intentionally save uploaded CSV files to the application repository. "
+    "Generated PDF reports are created temporarily for download."
+)
+
 st.title("Hidden Profit Analytics")
 st.subheader("Business Optimization Dashboard")
 
