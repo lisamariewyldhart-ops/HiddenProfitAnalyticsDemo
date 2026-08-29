@@ -20,6 +20,12 @@ st.set_page_config(
     layout="wide",
 )
 
+st.info(
+    "Private Beta: Hidden Profit Analytics is currently being tested with a limited group of users. "
+    "Please upload only business data you are authorized to use. "
+    "Results are provided for decision-support purposes and should not be considered accounting, legal, tax, or financial advice."
+)
+
 st.title("Hidden Profit Analytics")
 st.subheader("Business Optimization Dashboard")
 
