@@ -3,6 +3,7 @@ from turtle import pd
 import matplotlib.pyplot as plt
 
 from datetime import date
+import tempfile
 from reportlab.lib import colors
 from reportlab.lib import styles
 from reportlab.lib.enums import TA_CENTER
@@ -65,7 +66,12 @@ def create_pdf_report(
     sensitivity_df,
     sensitivity_percent
 ):
-    pdf_name = "hidden_profit_report.pdf"
+    temp_pdf = tempfile.NamedTemporaryFile(
+        suffix=".pdf",
+        delete=False
+    )
+    pdf_name = temp_pdf.name
+    temp_pdf.close()
 
     doc = SimpleDocTemplate(
         pdf_name,
