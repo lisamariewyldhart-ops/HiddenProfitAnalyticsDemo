@@ -1,0 +1,18 @@
+# Python cache files
+__pycache__/
+*.pyc
+
+# Local/private configuration
+client_config.csv
+client_config.csv.save
+
+# Generated reports and outputs
+hidden_profit_report.pdf
+executive_summary.txt
+scenario_results.csv
+scenario_cost_comparison.png
+predefined_scenario_cost_comparison.png
+profit_opportunity.png
+
+# macOS files
+.DS_Store

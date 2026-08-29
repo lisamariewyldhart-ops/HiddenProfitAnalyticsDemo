@@ -1,0 +1,4 @@
+Scenario,Max Revenue Increase,Max Expense Reduction,Revenue Cost,Expense Cost
+Conservative,3000,1000,0.30,0.10
+Moderate,3000,1500,0.30,0.10
+Flexible,3000,2500,0.30,0.10
