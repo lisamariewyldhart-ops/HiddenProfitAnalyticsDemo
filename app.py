@@ -1,6 +1,8 @@
 import streamlit as st
 import pandas as pd
 
+from assignment_optimizer import run_assignment_optimizer
+
 from hidden_profit_engine import (
     analyze_business,
     validate_financial_data,
@@ -32,6 +34,65 @@ st.caption(
     "Generated PDF reports are created temporarily for download."
 )
 
+st.header("Assignment Optimizer")
+
+st.write(
+    "Find the lowest-cost assignment of employees, resources, "
+    "or teams to tasks while comparing the optimized solution "
+    "to the current assignment."
+)
+
+assignment_file = st.file_uploader(
+    "Upload Assignment Data CSV",
+    type=["csv"],
+    key="assignment_upload"
+)
+
+if assignment_file is not None:
+    try:
+        results = run_assignment_optimizer(assignment_file)
+
+        st.success("Optimization completed successfully.")
+
+        col1, col2, col3, col4 = st.columns(4)
+
+        col1.metric(
+            "Current Cost",
+            f"${results['current_cost']:,.2f}"
+        )
+
+        col2.metric(
+            "Optimized Cost",
+            f"${results['optimized_cost']:,.2f}"
+        )
+
+        col3.metric(
+            "Potential Savings",
+            f"${results['savings']:,.2f}"
+        )
+
+        col4.metric(
+            "Savings %",
+            f"{results['savings_percent']:.2f}%"
+        )
+
+        st.subheader("Recommended Assignments")
+
+        st.dataframe(
+            results["assignments"],
+            use_container_width=True
+        )
+
+        st.subheader("Assignment Changes")
+
+        st.dataframe(
+            results["comparison"],
+            use_container_width=True
+        )
+
+    except Exception as error:
+        st.error(str(error))
+        
 st.title("Hidden Profit Analytics")
 st.subheader("Business Optimization Dashboard")
 
@@ -47,7 +108,7 @@ with st.expander("How to Use Hidden Profit Analytics", expanded=False):
 7. When you're finished testing, open **Help & FAQs** and click **Give Beta Feedback** to share your experience.
 """
     )
-    
+
 with st.expander("Help & FAQs", expanded=False):
 
     st.markdown("### Getting Started")

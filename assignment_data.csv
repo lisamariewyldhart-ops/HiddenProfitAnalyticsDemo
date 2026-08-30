@@ -1,0 +1,10 @@
+Employee,Task,Cost,CurrentAssignment
+Alice,Task 1,18,1
+Alice,Task 2,24,0
+Alice,Task 3,16,0
+Bob,Task 1,20,0
+Bob,Task 2,15,0
+Bob,Task 3,22,1
+Carla,Task 1,14,0
+Carla,Task 2,19,1
+Carla,Task 3,17,0
