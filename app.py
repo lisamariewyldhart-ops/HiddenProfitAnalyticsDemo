@@ -35,6 +35,19 @@ st.caption(
 st.title("Hidden Profit Analytics")
 st.subheader("Business Optimization Dashboard")
 
+with st.expander("How to Use Hidden Profit Analytics", expanded=False):
+    st.markdown(
+        """
+1. **Enter the business information** and select a target profit margin.
+2. **Upload your financial data** using a CSV with Month, Revenue, and Expenses. If needed, download the CSV template in the Financial Data section.
+3. **Set the improvement assumptions** based on what is realistic for the business.
+4. Click **Run Analysis** to identify potential hidden profit opportunities.
+5. **Review the optimization recommendation, scenarios, and sensitivity analysis.**
+6. **Generate and download the Client Report** for a summary of the findings and recommended action plan.
+7. When you're finished testing, open **Help & FAQs** and click **Give Beta Feedback** to share your experience.
+"""
+    )
+    
 with st.expander("Help & FAQs", expanded=False):
 
     st.markdown("### Getting Started")
