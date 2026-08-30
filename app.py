@@ -111,6 +111,12 @@ professional accounting, tax, legal, or financial advice.
 """
     )
 
+    st.link_button(
+        "Give Beta Feedback",
+        "https://forms.gle/Q8Ey4TB6jYM3Yo6a6",
+        use_container_width=True
+    )   
+
 # ==========================================
 # STEP 1: BUSINESS INFORMATION
 # ==========================================
