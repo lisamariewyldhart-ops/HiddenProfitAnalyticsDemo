@@ -6,6 +6,7 @@ from set_covering_optimizer import run_set_covering_optimizer
 from facility_location_optimizer import run_facility_location_optimizer
 from transportation_optimizer import run_transportation_optimizer
 from scheduling_optimizer import run_scheduling_optimizer
+from resource_allocation_optimizer import run_resource_allocation_optimizer
 
 from hidden_profit_engine import (
     analyze_business,
@@ -392,6 +393,98 @@ if tool == "Scheduling Optimizer":
 
             st.dataframe(
                 results["schedule_comparison"],
+                use_container_width=True
+            )
+
+        except Exception as error:
+            st.error(str(error))
+
+if tool == "Resource Allocation Optimizer":
+    st.header("Resource Allocation Optimizer")
+
+    st.write(
+        "Allocate limited budget, staff hours, or other resources "
+        "across competing initiatives to maximize total business value."
+    )
+
+    allocation_file = st.file_uploader(
+        "Upload Resource Allocation Data CSV",
+        type=["csv"],
+        key="resource_allocation_upload"
+    )
+
+    limits_file = st.file_uploader(
+        "Upload Resource Limits CSV",
+        type=["csv"],
+        key="resource_limits_upload"
+    )
+
+    if (
+        allocation_file is not None
+        and limits_file is not None
+    ):
+        try:
+            results = run_resource_allocation_optimizer(
+                allocation_file,
+                limits_file
+            )
+
+            st.success("Optimization completed successfully.")
+
+            col1, col2, col3, col4 = st.columns(4)
+
+            col1.metric(
+                "Current Profit",
+                f"${results['current_profit']:,.2f}"
+            )
+
+            col2.metric(
+                "Optimized Profit",
+                f"${results['optimized_profit']:,.2f}"
+            )
+
+            col3.metric(
+                "Additional Profit",
+                f"${results['additional_profit']:,.2f}"
+            )
+
+            col4.metric(
+                "Improvement %",
+                f"{results['improvement_percent']:.2f}%"
+            )
+
+            st.subheader("Allocation Changes")
+
+            st.dataframe(
+                results["allocation_comparison"],
+                use_container_width=True
+            )
+
+            st.subheader("Resource Utilization")
+
+            resource_summary = pd.DataFrame(
+                {
+                    "Resource": [
+                        "Budget",
+                        "Staff Hours"
+                    ],
+                    "Current Use": [
+                        results["current_budget_used"],
+                        results["current_hours_used"]
+                    ],
+                    "Optimized Use": [
+                        results["optimized_budget_used"],
+                        results["optimized_hours_used"]
+                    ],
+                    "Limit": [
+                        results["budget_limit"],
+                        results["hours_limit"]
+                    ]
+                }
+            )
+
+            st.dataframe(
+                resource_summary,
                 use_container_width=True
             )
 
