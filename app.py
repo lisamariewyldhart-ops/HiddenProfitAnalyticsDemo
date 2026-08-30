@@ -226,9 +226,22 @@ with st.sidebar.expander(
         )   
 
 if uploaded_file is not None:
-    data = pd.read_csv(uploaded_file)
+    try:
+        data = pd.read_csv(uploaded_file)
+    except Exception:
+        st.error(
+            "The uploaded file could not be read as a valid CSV. "
+            "Please upload a properly formatted CSV file with Month, Revenue, and Expenses columns."
+        )
+        st.stop()
 
+    is_valid, validation_message = validate_financial_data(data)
+
+    if not is_valid:
+        st.error(validation_message)
+        st.stop()
     st.markdown("#### Uploaded Data")
+
     st.dataframe(
         data,
         use_container_width=True
@@ -286,13 +299,6 @@ if uploaded_file is not None:
                 "Please enter a possible revenue increase, expense reduction, "
                 "or both."
             )
-            st.stop()
-
-        # Validate financial data
-        is_valid, validation_message = validate_financial_data(data)
-
-        if not is_valid:
-            st.error(validation_message)
             st.stop()
 
         # ==========================================
