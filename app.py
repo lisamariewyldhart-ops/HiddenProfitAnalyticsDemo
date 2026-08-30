@@ -5,6 +5,7 @@ from assignment_optimizer import run_assignment_optimizer
 from set_covering_optimizer import run_set_covering_optimizer
 from facility_location_optimizer import run_facility_location_optimizer
 from transportation_optimizer import run_transportation_optimizer
+from scheduling_optimizer import run_scheduling_optimizer
 
 from hidden_profit_engine import (
     analyze_business,
@@ -311,6 +312,86 @@ if tool == "Transportation Optimizer":
 
             st.dataframe(
                 results["shipment_comparison"],
+                use_container_width=True
+            )
+
+        except Exception as error:
+            st.error(str(error))
+
+if tool == "Scheduling Optimizer":
+    st.header("Scheduling Optimizer")
+
+    st.write(
+        "Build a minimum-cost employee schedule while meeting staffing "
+        "requirements and respecting employee availability."
+    )
+
+    cost_file = st.file_uploader(
+        "Upload Scheduling Cost Data CSV",
+        type=["csv"],
+        key="scheduling_cost_upload"
+    )
+
+    requirements_file = st.file_uploader(
+        "Upload Staffing Requirements CSV",
+        type=["csv"],
+        key="scheduling_requirements_upload"
+    )
+
+    availability_file = st.file_uploader(
+        "Upload Employee Availability CSV",
+        type=["csv"],
+        key="scheduling_availability_upload"
+    )
+
+    current_file = st.file_uploader(
+        "Upload Current Schedule CSV",
+        type=["csv"],
+        key="scheduling_current_upload"
+    )
+
+    if (
+        cost_file is not None
+        and requirements_file is not None
+        and availability_file is not None
+        and current_file is not None
+    ):
+        try:
+            results = run_scheduling_optimizer(
+                cost_file,
+                requirements_file,
+                availability_file,
+                current_file
+            )
+
+            st.success("Optimization completed successfully.")
+
+            col1, col2, col3, col4 = st.columns(4)
+
+            col1.metric(
+                "Current Cost",
+                f"${results['current_total_cost']:,.2f}"
+            )
+
+            col2.metric(
+                "Optimized Cost",
+                f"${results['optimized_total_cost']:,.2f}"
+            )
+
+            col3.metric(
+                "Potential Savings",
+                f"${results['savings']:,.2f}"
+            )
+
+            col4.metric(
+                "Savings %",
+                f"{results['savings_percent']:.2f}%"
+            )
+
+            st.subheader("Schedule Changes")
+
+            st.dataframe(
+                results["schedule_comparison"],
                 use_container_width=True
             )
 
