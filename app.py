@@ -79,7 +79,26 @@ with st.sidebar.expander(
     "2. Financial Data",
     expanded=True
 ):
+    csv_template = (
+        "Month,Revenue,Expenses\n"
+        "January,30000,26000\n"
+        "February,34000,28000\n"
+        "March,38000,30000\n"
+    )
 
+    st.caption(
+        "Need a file to get started? Download the CSV template, "
+        "replace the sample values with your monthly financial data, "
+        "save it, and upload it below."
+    )
+
+    st.download_button(
+        label="Download CSV Template",
+        data=csv_template,
+        file_name="Hidden_Profit_Analytics_Template.csv",
+        mime="text/csv",
+        use_container_width=True
+    )
     uploaded_file = st.file_uploader(
         "Upload financial data CSV",
         type=["csv"],
