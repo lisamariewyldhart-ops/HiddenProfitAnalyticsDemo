@@ -1,0 +1,5 @@
+Option,Cost,CurrentSelected,Zone A,Zone B,Zone C,Zone D,Zone E
+Location 1,1200,1,1,1,0,0,0
+Location 2,1500,1,0,1,1,1,0
+Location 3,1100,1,0,0,1,0,1
+Location 4,1700,1,1,0,0,1,1

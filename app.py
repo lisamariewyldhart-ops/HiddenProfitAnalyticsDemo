@@ -2,6 +2,7 @@ import streamlit as st
 import pandas as pd
 
 from assignment_optimizer import run_assignment_optimizer
+from set_covering_optimizer import run_set_covering_optimizer
 
 from hidden_profit_engine import (
     analyze_business,
@@ -92,7 +93,65 @@ if assignment_file is not None:
 
     except Exception as error:
         st.error(str(error))
-        
+
+st.header("Set Covering Optimizer")
+
+st.write(
+    "Choose the minimum-cost set of locations, options, or resources "
+    "needed to cover every required area at least once."
+)
+
+set_covering_file = st.file_uploader(
+    "Upload Set Covering Data CSV",
+    type=["csv"],
+    key="set_covering_upload"
+)
+
+if set_covering_file is not None:
+    try:
+        results = run_set_covering_optimizer(set_covering_file)
+
+        st.success("Optimization completed successfully.")
+
+        col1, col2, col3, col4 = st.columns(4)
+
+        col1.metric(
+            "Current Cost",
+            f"${results['current_cost']:,.2f}"
+        )
+
+        col2.metric(
+            "Optimized Cost",
+            f"${results['optimized_cost']:,.2f}"
+        )
+
+        col3.metric(
+            "Potential Savings",
+            f"${results['savings']:,.2f}"
+        )
+
+        col4.metric(
+            "Savings %",
+            f"{results['savings_percent']:.2f}%"
+        )
+
+        st.subheader("Recommended Options")
+
+        st.dataframe(
+            results["selected_options"],
+            use_container_width=True
+        )
+
+        st.subheader("Configuration Changes")
+
+        st.dataframe(
+            results["comparison"],
+            use_container_width=True
+        )
+
+    except Exception as error:
+        st.error(str(error))
+
 st.title("Hidden Profit Analytics")
 st.subheader("Business Optimization Dashboard")
 
