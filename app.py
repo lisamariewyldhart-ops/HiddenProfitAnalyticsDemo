@@ -35,6 +35,81 @@ st.caption(
 st.title("Hidden Profit Analytics")
 st.subheader("Business Optimization Dashboard")
 
+with st.expander("Help & FAQs", expanded=False):
+
+    st.markdown("### Getting Started")
+
+    st.markdown(
+        """
+**What does Hidden Profit Analytics do?**  
+Hidden Profit Analytics analyzes monthly revenue and expenses to identify
+potential profit improvement opportunities. It then uses optimization modeling
+to recommend a cost-effective combination of revenue improvement and expense
+reduction based on the assumptions and limits you provide.
+
+**What information do I need?**  
+Upload a CSV file containing these three columns:
+
+- `Month`
+- `Revenue`
+- `Expenses`
+
+If you do not already have a correctly formatted CSV, use the
+**Download CSV Template** button in the Financial Data section.
+
+**What is the Target Profit Margin?**  
+This is the percentage of revenue you would like the business to retain as
+profit. Hidden Profit Analytics compares current performance with this target
+to estimate the potential profit opportunity.
+"""
+    )
+
+    st.markdown("### Understanding the Analysis")
+
+    st.markdown(
+        """
+**What is Hidden Profit Opportunity?**  
+This is the estimated difference between current profit and the profit needed
+to achieve the selected target margin. It represents a potential opportunity,
+not a guaranteed financial result.
+
+**What does the optimization recommendation mean?**  
+The optimization model evaluates possible revenue improvement and expense
+reduction and recommends a combination designed to close the identified profit
+gap at the lowest estimated implementation cost, subject to the assumptions
+and limits you enter.
+
+**What are Revenue Cost and Expense Cost?**  
+These estimate how much it costs to achieve $1 of improvement. For example,
+a Revenue Cost of $0.30 means the model assumes approximately $0.30 must be
+spent to generate $1 of additional revenue.
+
+**What are Maximum Revenue Increase and Maximum Expense Reduction?**  
+These limits help prevent the model from recommending changes that you believe
+would be unrealistic for the business.
+"""
+    )
+
+    st.markdown("### Results & Reports")
+
+    st.markdown(
+        """
+**What is sensitivity analysis?**  
+Sensitivity analysis tests whether the recommended strategy changes when
+implementation-cost assumptions change. This helps you evaluate how robust
+the recommendation may be.
+
+**What is the Client Report?**  
+The downloadable PDF summarizes the analysis, optimization recommendation,
+scenario comparisons, estimated costs and benefits, sensitivity results, and
+management action plan.
+
+**Are the results guaranteed?**  
+No. Results depend on the financial data and assumptions entered. Hidden
+Profit Analytics is a business decision-support tool and does not replace
+professional accounting, tax, legal, or financial advice.
+"""
+    )
 
 # ==========================================
 # STEP 1: BUSINESS INFORMATION
