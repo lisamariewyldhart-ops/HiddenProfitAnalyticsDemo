@@ -1,0 +1,7 @@
+Source,Destination,Quantity
+Warehouse 1,Destination A,70
+Warehouse 1,Destination B,20
+Warehouse 1,Destination C,30
+Warehouse 2,Destination A,10
+Warehouse 2,Destination B,50
+Warehouse 2,Destination C,30

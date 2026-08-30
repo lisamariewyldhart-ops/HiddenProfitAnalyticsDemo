@@ -4,6 +4,7 @@ import pandas as pd
 from assignment_optimizer import run_assignment_optimizer
 from set_covering_optimizer import run_set_covering_optimizer
 from facility_location_optimizer import run_facility_location_optimizer
+from transportation_optimizer import run_transportation_optimizer
 
 from hidden_profit_engine import (
     analyze_business,
@@ -230,6 +231,86 @@ if tool == "Facility Location Optimizer":
 
             st.dataframe(
                 results["assignment_comparison"],
+                use_container_width=True
+            )
+
+        except Exception as error:
+            st.error(str(error))
+
+if tool == "Transportation Optimizer":
+    st.header("Transportation Optimizer")
+
+    st.write(
+        "Determine how much should be shipped from each source to each "
+        "destination to satisfy demand at the lowest total transportation cost."
+    )
+
+    cost_file = st.file_uploader(
+        "Upload Transportation Cost Data CSV",
+        type=["csv"],
+        key="transportation_cost_upload"
+    )
+
+    supply_file = st.file_uploader(
+        "Upload Supply Data CSV",
+        type=["csv"],
+        key="transportation_supply_upload"
+    )
+
+    demand_file = st.file_uploader(
+        "Upload Demand Data CSV",
+        type=["csv"],
+        key="transportation_demand_upload"
+    )
+
+    current_file = st.file_uploader(
+        "Upload Current Shipping Plan CSV",
+        type=["csv"],
+        key="transportation_current_upload"
+    )
+
+    if (
+        cost_file is not None
+        and supply_file is not None
+        and demand_file is not None
+        and current_file is not None
+    ):
+        try:
+            results = run_transportation_optimizer(
+                cost_file,
+                supply_file,
+                demand_file,
+                current_file
+            )
+
+            st.success("Optimization completed successfully.")
+
+            col1, col2, col3, col4 = st.columns(4)
+
+            col1.metric(
+                "Current Cost",
+                f"${results['current_total_cost']:,.2f}"
+            )
+
+            col2.metric(
+                "Optimized Cost",
+                f"${results['optimized_total_cost']:,.2f}"
+            )
+
+            col3.metric(
+                "Potential Savings",
+                f"${results['savings']:,.2f}"
+            )
+
+            col4.metric(
+                "Savings %",
+                f"{results['savings_percent']:.2f}%"
+            )
+
+            st.subheader("Shipment Changes")
+
+            st.dataframe(
+                results["shipment_comparison"],
                 use_container_width=True
             )
 
