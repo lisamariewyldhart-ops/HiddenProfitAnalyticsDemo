@@ -1,0 +1,4 @@
+Facility,FixedCost,CurrentOpen,Customer A,Customer B,Customer C,Customer D
+Facility 1,4000,1,8,12,18,24
+Facility 2,5500,1,14,9,11,17
+Facility 3,3500,0,20,16,10,8

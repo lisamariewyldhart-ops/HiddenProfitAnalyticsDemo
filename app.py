@@ -3,6 +3,7 @@ import pandas as pd
 
 from assignment_optimizer import run_assignment_optimizer
 from set_covering_optimizer import run_set_covering_optimizer
+from facility_location_optimizer import run_facility_location_optimizer
 
 from hidden_profit_engine import (
     analyze_business,
@@ -166,6 +167,74 @@ if tool == "Set Covering Optimizer":
 
         except Exception as error:
             st.error(str(error))
+
+if tool == "Facility Location Optimizer":
+    st.header("Facility Location Optimizer")
+
+    st.write(
+        "Determine which facilities should remain open, close, or open, "
+        "and how customers should be assigned to minimize total cost."
+    )
+
+    facility_file = st.file_uploader(
+        "Upload Facility Cost Data CSV",
+        type=["csv"],
+        key="facility_location_upload"
+    )
+
+    demand_file = st.file_uploader(
+        "Upload Customer Demand Data CSV",
+        type=["csv"],
+        key="facility_demand_upload"
+    )
+
+    if facility_file is not None and demand_file is not None:
+        try:
+            results = run_facility_location_optimizer(
+                facility_file,
+                demand_file
+            )
+
+            st.success("Optimization completed successfully.")
+
+            col1, col2, col3, col4 = st.columns(4)
+
+            col1.metric(
+                "Current Cost",
+                f"${results['current_total_cost']:,.2f}"
+            )
+
+            col2.metric(
+                "Optimized Cost",
+                f"${results['optimized_total_cost']:,.2f}"
+            )
+
+            col3.metric(
+                "Potential Savings",
+                f"${results['savings']:,.2f}"
+            )
+
+            col4.metric(
+                "Savings %",
+                f"{results['savings_percent']:.2f}%"
+            )
+
+            st.subheader("Facility Recommendations")
+
+            st.dataframe(
+                results["facility_comparison"],
+                use_container_width=True
+            )
+
+            st.subheader("Customer Assignment Changes")
+
+            st.dataframe(
+                results["assignment_comparison"],
+                use_container_width=True
+            )
+
+        except Exception as error:
+            st.error(str(error))            
 
 if tool == "Profit Analyzer":
     st.title("Hidden Profit Analytics")

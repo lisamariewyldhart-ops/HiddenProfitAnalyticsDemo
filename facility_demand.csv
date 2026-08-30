@@ -1,0 +1,5 @@
+Customer,Demand,CurrentFacility
+Customer A,1000,Facility 1
+Customer B,800,Facility 2
+Customer C,1200,Facility 2
+Customer D,900,Facility 2
