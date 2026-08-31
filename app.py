@@ -1107,6 +1107,62 @@ if tool == "Scheduling Optimizer":
                 f"{results['savings_percent']:.2f}%"
             )
 
+            schedule_comparison = results["schedule_comparison"]
+
+            changed_rows = schedule_comparison[
+                schedule_comparison["Changed"] == True
+            ]
+
+            unchanged_rows = schedule_comparison[
+                schedule_comparison["Changed"] == False
+            ]
+
+            change_text = []
+
+            for _, row in changed_rows.iterrows():
+                change_text.append(
+                    f"reassign {row['Employee']} from "
+                    f"{row['CurrentShift']} to "
+                    f"{row['OptimizedShift']}"
+                )
+
+            keep_text = []
+
+            for _, row in unchanged_rows.iterrows():
+                keep_text.append(
+                    f"keep {row['Employee']} on "
+                    f"{row['CurrentShift']}"
+                )
+
+            action_parts = []
+
+            if change_text:
+                action_parts.append(
+                    "; ".join(change_text)
+                )
+
+            if keep_text:
+                action_parts.append(
+                    "; ".join(keep_text)
+                )
+
+            if results["savings"] > 0:
+                recommendation_text = (
+                    "Recommended action: "
+                    + "; ".join(action_parts)
+                    + f". This reduces estimated labor cost by "
+                    f"${results['savings']:,.2f}, or "
+                    f"{results['savings_percent']:.2f}%."
+                )
+
+                st.info(recommendation_text)
+
+            else:
+                st.info(
+                    "Recommended action: Keep the current schedule. "
+                    "The optimizer did not identify a lower-cost staffing plan."
+                )
+
             st.subheader("Schedule Changes")
 
             st.dataframe(
