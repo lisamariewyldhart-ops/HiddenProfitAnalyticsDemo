@@ -6,11 +6,38 @@ def run_resource_allocation_optimizer(
     allocation_file="resource_allocation_data.csv",
     limits_file="resource_limits.csv"
 ):
+
     # -----------------------------
     # LOAD BUSINESS DATA
     # -----------------------------
-    allocation_data = pd.read_csv(allocation_file)
-    limits_data = pd.read_csv(limits_file)
+    try:
+        allocation_data = pd.read_csv(allocation_file)
+        limits_data = pd.read_csv(limits_file)
+
+    except pd.errors.EmptyDataError:
+        raise ValueError(
+            "One of the Resource Allocation CSV files is empty. "
+            "Please use the downloadable Resource Allocation templates."
+        )
+
+    except pd.errors.ParserError:
+        raise ValueError(
+            "One of the Resource Allocation CSV files could not be read correctly. "
+            "Please make sure both files are valid CSV files."
+        )
+
+    if allocation_data.empty:
+        raise ValueError(
+            "The Resource Allocation file does not contain any initiative data."
+        )
+
+    if limits_data.empty:
+        raise ValueError(
+            "The Resource Limits file does not contain any resource limits."
+        )
+
+    allocation_data.columns = allocation_data.columns.str.strip()
+    limits_data.columns = limits_data.columns.str.strip()
 
     # -----------------------------
     # VALIDATE REQUIRED COLUMNS
@@ -31,16 +58,68 @@ def run_resource_allocation_optimizer(
 
     if missing_columns:
         raise ValueError(
-            "Missing allocation columns: "
+            "Your Resource Allocation file is missing the required column(s): "
             + ", ".join(sorted(missing_columns))
+            + ". Please use the downloadable Resource Allocation template "
+            "and keep the column names exactly as shown."
         )
 
-    if not {"Resource", "Limit"}.issubset(
-        limits_data.columns
-    ):
+    required_limit_columns = {
+        "Resource",
+        "Limit"
+    }
+
+    missing_limit_columns = (
+        required_limit_columns
+        - set(limits_data.columns)
+    )
+
+    if missing_limit_columns:
         raise ValueError(
-            "resource_limits.csv must contain "
-            "Resource and Limit columns."
+            "Your Resource Limits file is missing the required column(s): "
+            + ", ".join(sorted(missing_limit_columns))
+            + ". Please use the downloadable Resource Limits template "
+            "and keep the column names exactly as shown."
+        )
+
+    # -----------------------------
+    # CLEAN TEXT FIELDS
+    # -----------------------------
+    allocation_data["Initiative"] = (
+        allocation_data["Initiative"]
+        .astype(str)
+        .str.strip()
+    )
+
+    limits_data["Resource"] = (
+        limits_data["Resource"]
+        .astype(str)
+        .str.strip()
+    )
+
+    if (allocation_data["Initiative"] == "").any():
+        raise ValueError(
+            "Initiative names cannot be blank."
+        )
+
+    if (limits_data["Resource"] == "").any():
+        raise ValueError(
+            "Resource names cannot be blank."
+        )
+
+    # -----------------------------
+    # CHECK DUPLICATES
+    # -----------------------------
+    if allocation_data["Initiative"].duplicated().any():
+        raise ValueError(
+            "Duplicate initiative names were found in the "
+            "Resource Allocation file."
+        )
+
+    if limits_data["Resource"].duplicated().any():
+        raise ValueError(
+            "Duplicate resource names were found in the "
+            "Resource Limits file."
         )
 
     # -----------------------------
@@ -83,6 +162,55 @@ def run_resource_allocation_optimizer(
         )
 
     # -----------------------------
+    # VALIDATE BUSINESS VALUES
+    # -----------------------------
+    if (allocation_data["ProfitPerUnit"] < 0).any():
+        raise ValueError(
+            "ProfitPerUnit values cannot be negative."
+        )
+
+    if (allocation_data["BudgetPerUnit"] < 0).any():
+        raise ValueError(
+            "BudgetPerUnit values cannot be negative."
+        )
+
+    if (allocation_data["HoursPerUnit"] < 0).any():
+        raise ValueError(
+            "HoursPerUnit values cannot be negative."
+        )
+
+    if (allocation_data["MaxUnits"] < 0).any():
+        raise ValueError(
+            "MaxUnits values cannot be negative."
+        )
+
+    if (allocation_data["CurrentUnits"] < 0).any():
+        raise ValueError(
+            "CurrentUnits values cannot be negative."
+        )
+
+    if (limits_data["Limit"] < 0).any():
+        raise ValueError(
+            "Resource limits cannot be negative."
+        )
+
+    # MaxUnits and CurrentUnits must be whole numbers because
+    # the optimization model uses integer decision variables.
+    if not (
+        allocation_data["MaxUnits"] % 1 == 0
+    ).all():
+        raise ValueError(
+            "MaxUnits values must be whole numbers."
+        )
+
+    if not (
+        allocation_data["CurrentUnits"] % 1 == 0
+    ).all():
+        raise ValueError(
+            "CurrentUnits values must be whole numbers."
+        )
+
+    # -----------------------------
     # CREATE DICTIONARIES
     # -----------------------------
     profit_per_unit = {
@@ -115,14 +243,17 @@ def run_resource_allocation_optimizer(
         for _, row in limits_data.iterrows()
     }
 
+    # -----------------------------
+    # VALIDATE REQUIRED RESOURCES
+    # -----------------------------
     if "Budget" not in resource_limits:
         raise ValueError(
-            "Missing Budget resource limit."
+            "Your Resource Limits file is missing the Budget resource."
         )
 
     if "StaffHours" not in resource_limits:
         raise ValueError(
-            "Missing StaffHours resource limit."
+            "Your Resource Limits file is missing the StaffHours resource."
         )
 
     budget_limit = resource_limits["Budget"]
@@ -132,14 +263,11 @@ def run_resource_allocation_optimizer(
     # VALIDATE CURRENT ALLOCATION
     # -----------------------------
     for initiative in initiatives:
-        if current_units[initiative] < 0:
-            raise ValueError(
-                f"CurrentUnits cannot be negative for {initiative}."
-            )
-
         if current_units[initiative] > max_units[initiative]:
             raise ValueError(
-                f"CurrentUnits exceeds MaxUnits for {initiative}."
+                f"CurrentUnits for {initiative} is "
+                f"{current_units[initiative]:g}, but its MaxUnits is only "
+                f"{max_units[initiative]:g}."
             )
 
     current_budget_used = sum(
@@ -156,12 +284,15 @@ def run_resource_allocation_optimizer(
 
     if current_budget_used > budget_limit:
         raise ValueError(
-            "The current allocation exceeds the available budget."
+            f"The current allocation uses ${current_budget_used:,.2f} "
+            f"of budget, but the available budget is only "
+            f"${budget_limit:,.2f}."
         )
 
     if current_hours_used > hours_limit:
         raise ValueError(
-            "The current allocation exceeds available staff hours."
+            f"The current allocation uses {current_hours_used:g} staff hours, "
+            f"but only {hours_limit:g} staff hours are available."
         )
 
     # -----------------------------
