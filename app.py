@@ -309,6 +309,60 @@ if tool == "Set Covering Optimizer":
 
             st.subheader("Recommended Options")
 
+            comparison = results["comparison"]
+
+            to_add = comparison[
+                comparison["Recommendation"] == "Add"
+            ]["Option"].tolist()
+
+            to_keep = comparison[
+                comparison["Recommendation"] == "Keep"
+            ]["Option"].tolist()
+
+            to_remove = comparison[
+                comparison["Recommendation"] == "Remove"
+            ]["Option"].tolist()
+
+            action_parts = []
+
+            if to_keep:
+                action_parts.append(
+                    "keep " + ", ".join(to_keep)
+                )
+
+            if to_add:
+                action_parts.append(
+                    "add " + ", ".join(to_add)
+                )
+
+            if to_remove:
+                action_parts.append(
+                    "remove " + ", ".join(to_remove)
+                )
+
+            if results["savings"] > 0:
+                if action_parts:
+                    recommendation_text = (
+                        "Recommended action: "
+                        + "; ".join(action_parts)
+                        + f". This reduces estimated total cost by "
+                        f"${results['savings']:,.2f}, or "
+                        f"{results['savings_percent']:.2f}%."
+                    )
+                else:
+                    recommendation_text = (
+                        "Recommended action: Keep the current configuration. "
+                        "No changes are required."
+                    )
+
+                st.info(recommendation_text)
+
+            else:
+                st.info(
+                    "Recommended action: Keep the current configuration. "
+                    "The optimizer did not identify a lower-cost set of options."
+                )
+
             st.dataframe(
                 results["selected_options"],
                 use_container_width=True
