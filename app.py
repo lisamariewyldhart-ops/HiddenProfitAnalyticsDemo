@@ -1321,6 +1321,57 @@ if tool == "Resource Allocation Optimizer":
                 f"{results['improvement_percent']:.2f}%"
             )
 
+            allocation_comparison = results["allocation_comparison"]
+
+            increased = allocation_comparison[
+                allocation_comparison["Change"] > 0
+            ]
+
+            decreased = allocation_comparison[
+                allocation_comparison["Change"] < 0
+            ]
+
+            unchanged = allocation_comparison[
+                allocation_comparison["Change"] == 0
+            ]
+
+            action_parts = []
+
+            for _, row in increased.iterrows():
+                action_parts.append(
+                    f"increase {row['Initiative']} by "
+                    f"{row['Change']:,.0f} units"
+                )
+
+            for _, row in decreased.iterrows():
+                action_parts.append(
+                    f"decrease {row['Initiative']} by "
+                    f"{abs(row['Change']):,.0f} units"
+                )
+
+            for _, row in unchanged.iterrows():
+                action_parts.append(
+                    f"keep {row['Initiative']} at "
+                    f"{row['CurrentUnits']:,.0f} units"
+                )
+
+            if results["additional_profit"] > 0:
+                recommendation_text = (
+                    "Recommended action: "
+                    + "; ".join(action_parts)
+                    + f". This increases estimated profit by "
+                    f"${results['additional_profit']:,.2f}, or "
+                    f"{results['improvement_percent']:.2f}%."
+                )
+
+                st.info(recommendation_text)
+
+            else:
+                st.info(
+                    "Recommended action: Keep the current resource allocation. "
+                    "The optimizer did not identify a higher-profit allocation."
+                )
+
             st.subheader("Allocation Changes")
 
             st.dataframe(
