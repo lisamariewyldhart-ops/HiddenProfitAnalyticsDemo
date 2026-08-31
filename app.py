@@ -835,6 +835,45 @@ if tool == "Transportation Optimizer":
                 f"{results['savings_percent']:.2f}%"
             )
 
+            shipment_comparison = results["shipment_comparison"]
+
+            changed_routes = shipment_comparison[
+                shipment_comparison["Change"] != 0
+            ]
+
+            route_changes = []
+
+            for _, row in changed_routes.iterrows():
+                if row["Change"] > 0:
+                    route_changes.append(
+                        f"increase {row['Source']} to "
+                        f"{row['Destination']} by "
+                        f"{row['Change']:,.0f} units"
+                    )
+                else:
+                    route_changes.append(
+                        f"decrease {row['Source']} to "
+                        f"{row['Destination']} by "
+                        f"{abs(row['Change']):,.0f} units"
+                    )
+
+            if results["savings"] > 0:
+                recommendation_text = (
+                    "Recommended action: "
+                    + "; ".join(route_changes)
+                    + f". This reduces estimated transportation cost by "
+                    f"${results['savings']:,.2f}, or "
+                    f"{results['savings_percent']:.2f}%."
+                )
+
+                st.info(recommendation_text)
+
+            else:
+                st.info(
+                    "Recommended action: Keep the current shipping plan. "
+                    "The optimizer did not identify a lower-cost transportation plan."
+                )
+
             st.subheader("Shipment Changes")
 
             st.dataframe(
