@@ -61,56 +61,101 @@ if tool == "Assignment Optimizer":
         "to the current assignment."
     )
 
-    assignment_file = st.file_uploader(
-        "Upload Assignment Data CSV",
-        type=["csv"],
-        key="assignment_upload"
+    assignment_template = pd.DataFrame(
+    {
+        "Employee": [
+            "Alice", "Alice", "Alice",
+            "Bob", "Bob", "Bob",
+            "Carla", "Carla", "Carla"
+        ],
+        "Task": [
+            "Task 1", "Task 2", "Task 3",
+            "Task 1", "Task 2", "Task 3",
+            "Task 1", "Task 2", "Task 3"
+        ],
+        "Cost": [
+            18, 24, 16,
+            20, 15, 22,
+            14, 19, 17
+        ],
+        "CurrentAssignment": [
+            1, 0, 0,
+            0, 0, 1,
+            0, 1, 0
+        ]
+    }
+)
+
+    st.download_button(
+        label="Download Assignment CSV Template",
+        data=assignment_template.to_csv(index=False),
+        file_name="assignment_template.csv",
+        mime="text/csv"
     )
 
-    if assignment_file is not None:
-        try:
-            results = run_assignment_optimizer(assignment_file)
+    with st.expander("How to format your Assignment data"):
+        st.markdown(
+            """
+            - **Employee**: Name of the employee, team, machine, or resource.
+            - **Task**: Name of the task, job, project, or customer.
+            - **Cost**: Cost of assigning that resource to that task.
+            - **CurrentAssignment**: Enter `1` if this is the current assignment, otherwise `0`.
 
-            st.success("Optimization completed successfully.")
+            Each employee-task combination should appear once.
+            Every task must have exactly one current assignment.
+            """
+        )
 
-            col1, col2, col3, col4 = st.columns(4)
+        assignment_file = st.file_uploader(
+            "Upload Assignment Data CSV",
+            type=["csv"],
+            key="assignment_upload"
+        )
 
-            col1.metric(
-                "Current Cost",
-                f"${results['current_cost']:,.2f}"
-            )
+        if assignment_file is not None:
+            try:
+                results = run_assignment_optimizer(assignment_file)
 
-            col2.metric(
-                "Optimized Cost",
-                f"${results['optimized_cost']:,.2f}"
-            )
+                st.success("Optimization completed successfully.")
 
-            col3.metric(
-                "Potential Savings",
-                f"${results['savings']:,.2f}"
-            )
+                col1, col2, col3, col4 = st.columns(4)
 
-            col4.metric(
-                "Savings %",
-                f"{results['savings_percent']:.2f}%"
-            )
+                col1.metric(
+                    "Current Cost",
+                    f"${results['current_cost']:,.2f}"
+                )
 
-            st.subheader("Recommended Assignments")
+                col2.metric(
+                    "Optimized Cost",
+                    f"${results['optimized_cost']:,.2f}"
+                )
 
-            st.dataframe(
-                results["assignments"],
-                use_container_width=True
-            )
+                col3.metric(
+                    "Potential Savings",
+                    f"${results['savings']:,.2f}"
+                )
 
-            st.subheader("Assignment Changes")
+                col4.metric(
+                    "Savings %",
+                    f"{results['savings_percent']:.2f}%"
+                )
 
-            st.dataframe(
-                results["comparison"],
-                use_container_width=True
-            )
+                st.subheader("Recommended Assignments")
 
-        except Exception as error:
-            st.error(str(error))
+                st.dataframe(
+                    results["assignments"],
+                    use_container_width=True
+                )
+
+                st.subheader("Assignment Changes")
+
+                st.dataframe(
+                    results["comparison"],
+                    use_container_width=True
+                )
+
+            except Exception as error:
+                st.error(str(error))
 
 if tool == "Set Covering Optimizer":
     st.header("Set Covering Optimizer")
@@ -119,6 +164,79 @@ if tool == "Set Covering Optimizer":
         "Choose the minimum-cost set of locations, options, or resources "
         "needed to cover every required area at least once."
     )
+
+    set_covering_template = pd.DataFrame(
+        {
+            "Option": [
+                "Location 1",
+                "Location 2",
+                "Location 3",
+                "Location 4"
+            ],
+            "Cost": [
+                1200,
+                1500,
+                1100,
+                1700
+            ],
+            "CurrentSelected": [
+                1,
+                1,
+                1,
+                1
+            ],
+            "Zone A": [
+                1,
+                0,
+                0,
+                1
+            ],
+            "Zone B": [
+                1,
+                1,
+                0,
+                0
+            ],
+            "Zone C": [
+                0,
+                1,
+                1,
+                0
+            ],
+            "Zone D": [
+                0,
+                1,
+                0,
+                1
+            ],
+            "Zone E": [
+                0,
+                0,
+                1,
+                1
+            ]
+        }
+    )
+
+    st.download_button(
+        label="Download Set Covering CSV Template",
+        data=set_covering_template.to_csv(index=False),
+        file_name="set_covering_template.csv",
+        mime="text/csv"
+    )
+
+    with st.expander("How to format your Set Covering data"):
+        st.markdown(
+            """
+            - **Option**: Name of the location, service option, resource, supplier, or other choice.
+            - **Cost**: Cost of selecting that option.
+            - **CurrentSelected**: Enter `1` if the option is currently being used, otherwise `0`.
+            - **Coverage columns**: Add one column for each required location, customer group, route, time period, or item that must be covered.
+            - Enter `1` when an option covers that requirement and `0` when it does not.
+
+            Every required coverage column must be covered by at least one option.
+            """
+        )
 
     set_covering_file = st.file_uploader(
         "Upload Set Covering Data CSV",
@@ -179,65 +297,167 @@ if tool == "Facility Location Optimizer":
         "and how customers should be assigned to minimize total cost."
     )
 
-    facility_file = st.file_uploader(
-        "Upload Facility Cost Data CSV",
-        type=["csv"],
-        key="facility_location_upload"
+    facility_location_template = pd.DataFrame(
+        {
+            "Facility": [
+                "Facility 1",
+                "Facility 2",
+                "Facility 3"
+            ],
+            "FixedCost": [
+                4000,
+                5500,
+                3500
+            ],
+            "CurrentOpen": [
+                1,
+                1,
+                0
+            ],
+            "Customer A": [
+                8,
+                14,
+                20
+            ],
+            "Customer B": [
+                12,
+                9,
+                16
+            ],
+            "Customer C": [
+                18,
+                11,
+                10
+            ],
+            "Customer D": [
+                24,
+                17,
+                8
+            ]
+        }
     )
 
-    demand_file = st.file_uploader(
-        "Upload Customer Demand Data CSV",
-        type=["csv"],
-        key="facility_demand_upload"
+    facility_demand_template = pd.DataFrame(
+        {
+            "Customer": [
+                "Customer A",
+                "Customer B",
+                "Customer C",
+                "Customer D"
+            ],
+            "Demand": [
+                1000,
+                800,
+                1200,
+                900
+            ],
+            "CurrentFacility": [
+                "Facility 1",
+                "Facility 2",
+                "Facility 2",
+                "Facility 2"
+            ]
+        }
     )
 
-    if facility_file is not None and demand_file is not None:
-        try:
-            results = run_facility_location_optimizer(
-                facility_file,
-                demand_file
-            )
+    col1, col2 = st.columns(2)
 
-            st.success("Optimization completed successfully.")
+    with col1:
+        st.download_button(
+            label="Download Facility Cost Template",
+            data=facility_location_template.to_csv(index=False),
+            file_name="facility_location_template.csv",
+            mime="text/csv"
+        )
 
-            col1, col2, col3, col4 = st.columns(4)
+    with col2:
+        st.download_button(
+            label="Download Customer Demand Template",
+            data=facility_demand_template.to_csv(index=False),
+            file_name="facility_demand_template.csv",
+            mime="text/csv"
+        )
 
-            col1.metric(
-                "Current Cost",
-                f"${results['current_total_cost']:,.2f}"
-            )
+    with st.expander("How to format your Facility Location data"):
+        st.markdown(
+            """
+            **Facility Cost File**
 
-            col2.metric(
-                "Optimized Cost",
-                f"${results['optimized_total_cost']:,.2f}"
-            )
+            - **Facility**: Name of the candidate facility.
+            - **FixedCost**: Fixed cost of operating that facility.
+            - **CurrentOpen**: Enter `1` if the facility is currently open, otherwise `0`.
+            - **Customer columns**: Enter the per-unit service or transportation cost from each facility to each customer.
 
-            col3.metric(
-                "Potential Savings",
-                f"${results['savings']:,.2f}"
-            )
+            **Customer Demand File**
 
-            col4.metric(
-                "Savings %",
-                f"{results['savings_percent']:.2f}%"
-            )
+            - **Customer**: Customer, market, region, or demand zone name.
+            - **Demand**: Required demand volume for that customer or zone.
+            - **CurrentFacility**: Facility currently serving that customer.
 
-            st.subheader("Facility Recommendations")
+            Customer names must match the customer column names in the Facility Cost file.
+            Facility names in `CurrentFacility` must match the names in the Facility Cost file.
+            """
+        )
 
-            st.dataframe(
-                results["facility_comparison"],
-                use_container_width=True
-            )
+        facility_file = st.file_uploader(
+            "Upload Facility Cost Data CSV",
+            type=["csv"],
+            key="facility_location_upload"
+        )
 
-            st.subheader("Customer Assignment Changes")
+        demand_file = st.file_uploader(
+            "Upload Customer Demand Data CSV",
+            type=["csv"],
+            key="facility_demand_upload"
+        )
 
-            st.dataframe(
-                results["assignment_comparison"],
-                use_container_width=True
-            )
+        if facility_file is not None and demand_file is not None:
+            try:
+                results = run_facility_location_optimizer(
+                    facility_file,
+                    demand_file
+                )
 
-        except Exception as error:
-            st.error(str(error))
+                st.success("Optimization completed successfully.")
+
+                col1, col2, col3, col4 = st.columns(4)
+
+                col1.metric(
+                    "Current Cost",
+                    f"${results['current_total_cost']:,.2f}"
+                )
+
+                col2.metric(
+                    "Optimized Cost",
+                    f"${results['optimized_total_cost']:,.2f}"
+                )
+
+                col3.metric(
+                    "Potential Savings",
+                    f"${results['savings']:,.2f}"
+                )
+
+                col4.metric(
+                    "Savings %",
+                    f"{results['savings_percent']:.2f}%"
+                )
+
+                st.subheader("Facility Recommendations")
+
+                st.dataframe(
+                    results["facility_comparison"],
+                    use_container_width=True
+                )
+
+                st.subheader("Customer Assignment Changes")
+
+                st.dataframe(
+                    results["assignment_comparison"],
+                    use_container_width=True
+                )
+
+            except Exception as error:
+                st.error(str(error))
 
 if tool == "Transportation Optimizer":
     st.header("Transportation Optimizer")
@@ -246,6 +466,149 @@ if tool == "Transportation Optimizer":
         "Determine how much should be shipped from each source to each "
         "destination to satisfy demand at the lowest total transportation cost."
     )
+
+    transportation_costs_template = pd.DataFrame(
+        {
+            "Source": [
+                "Warehouse 1",
+                "Warehouse 2"
+            ],
+            "Destination A": [
+                4,
+                5
+            ],
+            "Destination B": [
+                6,
+                3
+            ],
+            "Destination C": [
+                8,
+                7
+            ]
+        }
+    )
+
+    transportation_supply_template = pd.DataFrame(
+        {
+            "Source": [
+                "Warehouse 1",
+                "Warehouse 2"
+            ],
+            "Supply": [
+                120,
+                100
+            ]
+        }
+    )
+
+    transportation_demand_template = pd.DataFrame(
+        {
+            "Destination": [
+                "Destination A",
+                "Destination B",
+                "Destination C"
+            ],
+            "Demand": [
+                80,
+                70,
+                60
+            ]
+        }
+    )
+
+    transportation_current_template = pd.DataFrame(
+        {
+            "Source": [
+                "Warehouse 1",
+                "Warehouse 1",
+                "Warehouse 1",
+                "Warehouse 2",
+                "Warehouse 2",
+                "Warehouse 2"
+            ],
+            "Destination": [
+                "Destination A",
+                "Destination B",
+                "Destination C",
+                "Destination A",
+                "Destination B",
+                "Destination C"
+            ],
+            "Quantity": [
+                70,
+                20,
+                30,
+                10,
+                50,
+                30
+            ]
+        }
+    )
+
+    row1_col1, row1_col2 = st.columns(2)
+
+    with row1_col1:
+        st.download_button(
+            label="Download Transportation Cost Template",
+            data=transportation_costs_template.to_csv(index=False),
+            file_name="transportation_costs_template.csv",
+            mime="text/csv"
+        )
+
+    with row1_col2:
+        st.download_button(
+            label="Download Supply Template",
+            data=transportation_supply_template.to_csv(index=False),
+            file_name="transportation_supply_template.csv",
+            mime="text/csv"
+        )
+
+    row2_col1, row2_col2 = st.columns(2)
+
+    with row2_col1:
+        st.download_button(
+            label="Download Demand Template",
+            data=transportation_demand_template.to_csv(index=False),
+            file_name="transportation_demand_template.csv",
+            mime="text/csv"
+        )
+
+    with row2_col2:
+        st.download_button(
+            label="Download Current Shipping Template",
+            data=transportation_current_template.to_csv(index=False),
+            file_name="transportation_current_template.csv",
+            mime="text/csv"
+        )
+
+    with st.expander("How to format your Transportation data"):
+        st.markdown(
+            """
+            **Transportation Cost File**
+
+            - **Source**: Name of the warehouse, plant, supplier, or shipping origin.
+            - **Destination columns**: Enter the per-unit shipping cost from each source to each destination.
+
+            **Supply File**
+
+            - **Source**: Must match the source names in the Transportation Cost file.
+            - **Supply**: Maximum quantity available from each source.
+
+            **Demand File**
+
+            - **Destination**: Must match the destination column names in the Transportation Cost file.
+            - **Demand**: Quantity required at each destination.
+
+            **Current Shipping Plan File**
+
+            - **Source**: Shipping origin.
+            - **Destination**: Shipping destination.
+            - **Quantity**: Current quantity shipped on that route.
+
+            Total available supply must be sufficient to meet total demand.
+            Source and destination names must match across all files.
+            """
+        )
 
     cost_file = st.file_uploader(
         "Upload Transportation Cost Data CSV",
@@ -327,6 +690,159 @@ if tool == "Scheduling Optimizer":
         "requirements and respecting employee availability."
     )
 
+    scheduling_costs_template = pd.DataFrame(
+        {
+            "Employee": [
+                "Alice",
+                "Bob",
+                "Carla",
+                "David"
+            ],
+            "Shift 1": [
+                120,
+                110,
+                135,
+                100
+            ],
+            "Shift 2": [
+                140,
+                150,
+                125,
+                155
+            ],
+            "Shift 3": [
+                160,
+                130,
+                145,
+                150
+            ]
+        }
+    )
+
+    scheduling_requirements_template = pd.DataFrame(
+        {
+            "Shift": [
+                "Shift 1",
+                "Shift 2",
+                "Shift 3"
+            ],
+            "RequiredEmployees": [
+                2,
+                1,
+                1
+            ]
+        }
+    )
+
+    scheduling_availability_template = pd.DataFrame(
+        {
+            "Employee": [
+                "Alice",
+                "Bob",
+                "Carla",
+                "David"
+            ],
+            "Shift 1": [
+                1,
+                1,
+                0,
+                1
+            ],
+            "Shift 2": [
+                1,
+                0,
+                1,
+                1
+            ],
+            "Shift 3": [
+                1,
+                1,
+                1,
+                0
+            ]
+        }
+    )
+
+    scheduling_current_template = pd.DataFrame(
+        {
+            "Employee": [
+                "Alice",
+                "Bob",
+                "Carla",
+                "David"
+            ],
+            "Shift": [
+                "Shift 2",
+                "Shift 1",
+                "Shift 3",
+                "Shift 1"
+            ]
+        }
+    )
+
+    row1_col1, row1_col2 = st.columns(2)
+
+    with row1_col1:
+        st.download_button(
+            label="Download Scheduling Cost Template",
+            data=scheduling_costs_template.to_csv(index=False),
+            file_name="scheduling_costs_template.csv",
+            mime="text/csv"
+        )
+
+    with row1_col2:
+        st.download_button(
+            label="Download Staffing Requirements Template",
+            data=scheduling_requirements_template.to_csv(index=False),
+            file_name="scheduling_requirements_template.csv",
+            mime="text/csv"
+        )
+
+    row2_col1, row2_col2 = st.columns(2)
+
+    with row2_col1:
+        st.download_button(
+            label="Download Availability Template",
+            data=scheduling_availability_template.to_csv(index=False),
+            file_name="scheduling_availability_template.csv",
+            mime="text/csv"
+        )
+
+    with row2_col2:
+        st.download_button(
+            label="Download Current Schedule Template",
+            data=scheduling_current_template.to_csv(index=False),
+            file_name="scheduling_current_template.csv",
+            mime="text/csv"
+        )
+
+    with st.expander("How to format your Scheduling data"):
+        st.markdown(
+            """
+            **Scheduling Cost File**
+
+            - **Employee**: Name of the employee or resource.
+            - **Shift columns**: Enter the labor cost of assigning that employee to each shift.
+
+            **Staffing Requirements File**
+
+            - **Shift**: Must match the shift column names in the Scheduling Cost file.
+            - **RequiredEmployees**: Minimum number of employees needed for that shift.
+
+            **Availability File**
+
+            - **Employee**: Must match the employee names in the Scheduling Cost file.
+            - **Shift columns**: Enter `1` if the employee is available for that shift and `0` if unavailable.
+
+            **Current Schedule File**
+
+            - **Employee**: Employee name.
+            - **Shift**: Shift currently assigned to that employee.
+
+            Employee and shift names must match across all files.
+            """
+        )
+
     cost_file = st.file_uploader(
         "Upload Scheduling Cost Data CSV",
         type=["csv"],
@@ -406,6 +922,100 @@ if tool == "Resource Allocation Optimizer":
         "Allocate limited budget, staff hours, or other resources "
         "across competing initiatives to maximize total business value."
     )
+
+    resource_allocation_template = pd.DataFrame(
+        {
+            "Initiative": [
+                "Marketing Campaign",
+                "Sales Expansion",
+                "Process Automation",
+                "Customer Retention"
+            ],
+            "ProfitPerUnit": [
+                1800,
+                2200,
+                2600,
+                1400
+            ],
+            "BudgetPerUnit": [
+                1200,
+                1500,
+                2000,
+                900
+            ],
+            "HoursPerUnit": [
+                18,
+                24,
+                20,
+                12
+            ],
+            "MaxUnits": [
+                8,
+                6,
+                5,
+                10
+            ],
+            "CurrentUnits": [
+                3,
+                2,
+                1,
+                4
+            ]
+        }
+    )
+
+    resource_limits_template = pd.DataFrame(
+        {
+            "Resource": [
+                "Budget",
+                "StaffHours"
+            ],
+            "Limit": [
+                15000,
+                180
+            ]
+        }
+    )
+
+    col1, col2 = st.columns(2)
+
+    with col1:
+        st.download_button(
+            label="Download Resource Allocation Template",
+            data=resource_allocation_template.to_csv(index=False),
+            file_name="resource_allocation_template.csv",
+            mime="text/csv"
+        )
+
+    with col2:
+        st.download_button(
+            label="Download Resource Limits Template",
+            data=resource_limits_template.to_csv(index=False),
+            file_name="resource_limits_template.csv",
+            mime="text/csv"
+        )
+
+    with st.expander("How to format your Resource Allocation data"):
+        st.markdown(
+            """
+            **Resource Allocation File**
+
+            - **Initiative**: Name of the project, program, product, campaign, or activity competing for resources.
+            - **ProfitPerUnit**: Estimated profit or value generated by one unit of that initiative.
+            - **BudgetPerUnit**: Budget required for one unit.
+            - **HoursPerUnit**: Staff hours required for one unit.
+            - **MaxUnits**: Maximum number of units that can be funded or completed.
+            - **CurrentUnits**: Number of units currently being funded or completed.
+
+            **Resource Limits File**
+
+            - **Resource**: Name of the constrained resource.
+            - **Limit**: Total amount available.
+
+            For this version, the required resource names are `Budget` and `StaffHours`.
+            The current allocation must stay within the available resource limits.
+            """
+        )
 
     allocation_file = st.file_uploader(
         "Upload Resource Allocation Data CSV",
