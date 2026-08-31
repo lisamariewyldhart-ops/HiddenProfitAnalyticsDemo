@@ -382,15 +382,32 @@ if tool == "Set Covering Optimizer":
                     "The optimizer did not identify a lower-cost set of options."
                 )
 
+            selected_options_display = results["selected_options"].rename(
+                columns={
+                    "Option": "Option",
+                    "Cost": "Selected Cost"
+                }
+            )
+
+            comparison_display = results["comparison"].rename(
+                columns={
+                    "Option": "Option",
+                    "Cost": "Cost",
+                    "CurrentSelected": "Currently Selected",
+                    "OptimizedSelected": "Recommended",
+                    "Recommendation": "Action"
+                }
+            )
+
             st.dataframe(
-                results["selected_options"],
+                selected_options_display,
                 use_container_width=True
             )
 
             st.subheader("Configuration Changes")
 
             st.dataframe(
-                results["comparison"],
+                comparison_display,
                 use_container_width=True
             )
 
@@ -626,15 +643,35 @@ if tool == "Facility Location Optimizer":
 
             st.subheader("Facility Recommendations")
 
+            facility_display = results["facility_comparison"].rename(
+                columns={
+                    "Facility": "Facility",
+                    "FixedCost": "Fixed Cost",
+                    "CurrentOpen": "Currently Open",
+                    "OptimizedOpen": "Recommended Open",
+                    "Recommendation": "Action"
+                }
+            )
+
+            assignment_display = results["assignment_comparison"].rename(
+                columns={
+                    "Customer": "Customer",
+                    "Demand": "Demand",
+                    "CurrentFacility": "Current Facility",
+                    "OptimizedFacility": "Recommended Facility",
+                    "Changed": "Assignment Changed"
+                }
+            )
+
             st.dataframe(
-                results["facility_comparison"],
+                facility_display,
                 use_container_width=True
             )
 
             st.subheader("Customer Assignment Changes")
 
             st.dataframe(
-                results["assignment_comparison"],
+                assignment_display,
                 use_container_width=True
             )
 
@@ -895,8 +932,19 @@ if tool == "Transportation Optimizer":
 
             st.subheader("Shipment Changes")
 
+            shipment_display = results["shipment_comparison"].rename(
+                columns={
+                    "Source": "Source",
+                    "Destination": "Destination",
+                    "CurrentQuantity": "Current Quantity",
+                    "OptimizedQuantity": "Recommended Quantity",
+                    "Change": "Quantity Change",
+                    "UnitCost": "Unit Cost"
+                }
+            )
+
             st.dataframe(
-                results["shipment_comparison"],
+                shipment_display,
                 use_container_width=True
             )
 
@@ -1184,8 +1232,19 @@ if tool == "Scheduling Optimizer":
 
             st.subheader("Schedule Changes")
 
+            schedule_display = results["schedule_comparison"].rename(
+                columns={
+                    "Employee": "Employee",
+                    "CurrentShift": "Current Shift",
+                    "CurrentCost": "Current Cost",
+                    "OptimizedShift": "Recommended Shift",
+                    "OptimizedCost": "Recommended Cost",
+                    "Changed": "Schedule Changed"
+                }
+            )
+
             st.dataframe(
-                results["schedule_comparison"],
+                schedule_display,
                 use_container_width=True
             )
 
@@ -1393,8 +1452,20 @@ if tool == "Resource Allocation Optimizer":
 
             st.subheader("Allocation Changes")
 
+            allocation_display = results["allocation_comparison"].rename(
+                columns={
+                    "Initiative": "Initiative",
+                    "CurrentUnits": "Current Units",
+                    "OptimizedUnits": "Recommended Units",
+                    "Change": "Unit Change",
+                    "ProfitPerUnit": "Profit per Unit",
+                    "CurrentProfit": "Current Profit",
+                    "OptimizedProfit": "Recommended Profit"
+                }
+            )
+
             st.dataframe(
-                results["allocation_comparison"],
+                allocation_display,
                 use_container_width=True
             )
 
@@ -1410,7 +1481,7 @@ if tool == "Resource Allocation Optimizer":
                         results["current_budget_used"],
                         results["current_hours_used"]
                     ],
-                    "Optimized Use": [
+                    "Recommended Use": [
                         results["optimized_budget_used"],
                         results["optimized_hours_used"]
                     ],
