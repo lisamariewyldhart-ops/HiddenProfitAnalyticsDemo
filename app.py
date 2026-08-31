@@ -177,15 +177,34 @@ if tool == "Assignment Optimizer":
                     "The optimizer did not identify a lower-cost assignment."
                 )
 
+            assignments_display = results["assignments"].rename(
+            columns={
+                "Employee": "Employee",
+                "Task": "Recommended Task",
+                "Cost": "Assignment Cost"
+            }
+        )
+
+            comparison_display = results["comparison"].rename(
+                columns={
+                    "Employee": "Employee",
+                    "CurrentTask": "Current Task",
+                    "CurrentCost": "Current Cost",
+                    "OptimizedTask": "Recommended Task",
+                    "OptimizedCost": "Recommended Cost",
+                    "Changed": "Assignment Changed"
+                }
+            )
+
             st.dataframe(
-                results["assignments"],
+                assignments_display,
                 use_container_width=True
             )
 
             st.subheader("Assignment Changes")
 
             st.dataframe(
-                results["comparison"],
+                comparison_display,
                 use_container_width=True
             )
 
