@@ -106,91 +106,91 @@ if tool == "Assignment Optimizer":
             """
         )
 
-        assignment_file = st.file_uploader(
-            "Upload Assignment Data CSV",
-            type=["csv"],
-            key="assignment_upload"
-        )
+    assignment_file = st.file_uploader(
+        "Upload Assignment Data CSV",
+        type=["csv"],
+        key="assignment_upload"
+    )
 
-        if assignment_file is not None:
-            try:
-                results = run_assignment_optimizer(assignment_file)
+    if assignment_file is not None:
+        try:
+            results = run_assignment_optimizer(assignment_file)
 
-                st.success("Optimization completed successfully.")
+            st.success("Optimization completed successfully.")
 
-                col1, col2, col3, col4 = st.columns(4)
+            col1, col2, col3, col4 = st.columns(4)
 
-                col1.metric(
-                    "Current Cost",
-                    f"${results['current_cost']:,.2f}"
-                )
+            col1.metric(
+                "Current Cost",
+                f"${results['current_cost']:,.2f}"
+            )
 
-                col2.metric(
-                    "Optimized Cost",
-                    f"${results['optimized_cost']:,.2f}"
-                )
+            col2.metric(
+                "Optimized Cost",
+                f"${results['optimized_cost']:,.2f}"
+            )
 
-                col3.metric(
-                    "Potential Savings",
-                    f"${results['savings']:,.2f}"
-                )
+            col3.metric(
+                "Potential Savings",
+                f"${results['savings']:,.2f}"
+            )
 
-                col4.metric(
-                    "Savings %",
-                    f"{results['savings_percent']:.2f}%"
-                )
+            col4.metric(
+                "Savings %",
+                f"{results['savings_percent']:.2f}%"
+            )
 
-                st.subheader("Recommended Assignments")
-                changed_rows = results["comparison"][
-                    results["comparison"]["Changed"] == True
-                ]
+            st.subheader("Recommended Assignments")
+            changed_rows = results["comparison"][
+                results["comparison"]["Changed"] == True
+            ]
 
-                if results["savings"] > 0:
-                    change_text = []
+            if results["savings"] > 0:
+                change_text = []
 
-                    for _, row in changed_rows.iterrows():
-                        change_text.append(
-                            f"{row['Employee']} from "
-                            f"{row['CurrentTask']} to "
-                            f"{row['OptimizedTask']}"
-                        )
-
-                    if change_text:
-                        recommendation_text = (
-                            "Recommended action: Reassign "
-                            + "; ".join(change_text)
-                            + f". This reduces estimated assignment cost by "
-                            f"${results['savings']:,.2f}, or "
-                            f"{results['savings_percent']:.2f}%."
-                        )
-                    else:
-                        recommendation_text = (
-                            "Recommended action: Keep the current assignments. "
-                            "No assignment changes are required."
-                        )
-
-                    st.info(recommendation_text)
-
-                else:
-                    st.info(
-                        "Recommended action: Keep the current assignments. "
-                        "The optimizer did not identify a lower-cost assignment."
+                for _, row in changed_rows.iterrows():
+                    change_text.append(
+                        f"{row['Employee']} from "
+                        f"{row['CurrentTask']} to "
+                        f"{row['OptimizedTask']}"
                     )
 
-                st.dataframe(
-                    results["assignments"],
-                    use_container_width=True
+                if change_text:
+                    recommendation_text = (
+                        "Recommended action: Reassign "
+                        + "; ".join(change_text)
+                        + f". This reduces estimated assignment cost by "
+                        f"${results['savings']:,.2f}, or "
+                        f"{results['savings_percent']:.2f}%."
+                    )
+                else:
+                    recommendation_text = (
+                        "Recommended action: Keep the current assignments. "
+                        "No assignment changes are required."
+                    )
+
+                st.info(recommendation_text)
+
+            else:
+                st.info(
+                    "Recommended action: Keep the current assignments. "
+                    "The optimizer did not identify a lower-cost assignment."
                 )
 
-                st.subheader("Assignment Changes")
+            st.dataframe(
+                results["assignments"],
+                use_container_width=True
+            )
 
-                st.dataframe(
-                    results["comparison"],
-                    use_container_width=True
-                )
+            st.subheader("Assignment Changes")
 
-            except Exception as error:
-                st.error(str(error))
+            st.dataframe(
+                results["comparison"],
+                use_container_width=True
+            )
+
+        except Exception as error:
+            st.error(str(error))
 
 if tool == "Set Covering Optimizer":
     st.header("Set Covering Optimizer")
@@ -488,139 +488,139 @@ if tool == "Facility Location Optimizer":
             """
         )
 
-        facility_file = st.file_uploader(
-            "Upload Facility Cost Data CSV",
-            type=["csv"],
-            key="facility_location_upload"
-        )
+    facility_file = st.file_uploader(
+        "Upload Facility Cost Data CSV",
+        type=["csv"],
+        key="facility_location_upload"
+    )
 
-        demand_file = st.file_uploader(
-            "Upload Customer Demand Data CSV",
-            type=["csv"],
-            key="facility_demand_upload"
-        )
+    demand_file = st.file_uploader(
+        "Upload Customer Demand Data CSV",
+        type=["csv"],
+        key="facility_demand_upload"
+    )
 
-        if facility_file is not None and demand_file is not None:
-            try:
-                results = run_facility_location_optimizer(
-                    facility_file,
-                    demand_file
+    if facility_file is not None and demand_file is not None:
+        try:
+            results = run_facility_location_optimizer(
+                facility_file,
+                demand_file
+            )
+
+            st.success("Optimization completed successfully.")
+
+            col1, col2, col3, col4 = st.columns(4)
+
+            col1.metric(
+                "Current Cost",
+                f"${results['current_total_cost']:,.2f}"
+            )
+
+            col2.metric(
+                "Optimized Cost",
+                f"${results['optimized_total_cost']:,.2f}"
+            )
+
+            col3.metric(
+                "Potential Savings",
+                f"${results['savings']:,.2f}"
+            )
+
+            col4.metric(
+                "Savings %",
+                f"{results['savings_percent']:.2f}%"
+            )
+
+            facility_comparison = results["facility_comparison"]
+            assignment_comparison = results["assignment_comparison"]
+
+            keep_open = facility_comparison[
+                facility_comparison["Recommendation"] == "Keep Open"
+            ]["Facility"].tolist()
+
+            to_open = facility_comparison[
+                facility_comparison["Recommendation"] == "Open"
+            ]["Facility"].tolist()
+
+            to_close = facility_comparison[
+                facility_comparison["Recommendation"] == "Close"
+            ]["Facility"].tolist()
+
+            changed_customers = assignment_comparison[
+                assignment_comparison["Changed"] == True
+            ]
+
+            action_parts = []
+
+            if keep_open:
+                action_parts.append(
+                    "keep " + ", ".join(keep_open) + " open"
                 )
 
-                st.success("Optimization completed successfully.")
-
-                col1, col2, col3, col4 = st.columns(4)
-
-                col1.metric(
-                    "Current Cost",
-                    f"${results['current_total_cost']:,.2f}"
+            if to_open:
+                action_parts.append(
+                    "open " + ", ".join(to_open)
                 )
 
-                col2.metric(
-                    "Optimized Cost",
-                    f"${results['optimized_total_cost']:,.2f}"
+            if to_close:
+                action_parts.append(
+                    "close " + ", ".join(to_close)
                 )
 
-                col3.metric(
-                    "Potential Savings",
-                    f"${results['savings']:,.2f}"
+            customer_changes = []
+
+            for _, row in changed_customers.iterrows():
+                customer_changes.append(
+                    f"{row['Customer']} from "
+                    f"{row['CurrentFacility']} to "
+                    f"{row['OptimizedFacility']}"
                 )
 
-                col4.metric(
-                    "Savings %",
-                    f"{results['savings_percent']:.2f}%"
+            if results["savings"] > 0:
+                recommendation_text = (
+                    "Recommended action: "
+                    + "; ".join(action_parts)
+                    + "."
                 )
 
-                facility_comparison = results["facility_comparison"]
-                assignment_comparison = results["assignment_comparison"]
-
-                keep_open = facility_comparison[
-                    facility_comparison["Recommendation"] == "Keep Open"
-                ]["Facility"].tolist()
-
-                to_open = facility_comparison[
-                    facility_comparison["Recommendation"] == "Open"
-                ]["Facility"].tolist()
-
-                to_close = facility_comparison[
-                    facility_comparison["Recommendation"] == "Close"
-                ]["Facility"].tolist()
-
-                changed_customers = assignment_comparison[
-                    assignment_comparison["Changed"] == True
-                ]
-
-                action_parts = []
-
-                if keep_open:
-                    action_parts.append(
-                        "keep " + ", ".join(keep_open) + " open"
-                    )
-
-                if to_open:
-                    action_parts.append(
-                        "open " + ", ".join(to_open)
-                    )
-
-                if to_close:
-                    action_parts.append(
-                        "close " + ", ".join(to_close)
-                    )
-
-                customer_changes = []
-
-                for _, row in changed_customers.iterrows():
-                    customer_changes.append(
-                        f"{row['Customer']} from "
-                        f"{row['CurrentFacility']} to "
-                        f"{row['OptimizedFacility']}"
-                    )
-
-                if results["savings"] > 0:
-                    recommendation_text = (
-                        "Recommended action: "
-                        + "; ".join(action_parts)
+                if customer_changes:
+                    recommendation_text += (
+                        " Reassign "
+                        + "; ".join(customer_changes)
                         + "."
                     )
 
-                    if customer_changes:
-                        recommendation_text += (
-                            " Reassign "
-                            + "; ".join(customer_changes)
-                            + "."
-                        )
-
-                    recommendation_text += (
-                        f" This reduces estimated total cost by "
-                        f"${results['savings']:,.2f}, or "
-                        f"{results['savings_percent']:.2f}%."
-                    )
-
-                    st.info(recommendation_text)
-
-                else:
-                    st.info(
-                        "Recommended action: Keep the current facility "
-                        "configuration. The optimizer did not identify "
-                        "a lower-cost facility network."
-                    )
-
-                st.subheader("Facility Recommendations")
-
-                st.dataframe(
-                    results["facility_comparison"],
-                    use_container_width=True
+                recommendation_text += (
+                    f" This reduces estimated total cost by "
+                    f"${results['savings']:,.2f}, or "
+                    f"{results['savings_percent']:.2f}%."
                 )
 
-                st.subheader("Customer Assignment Changes")
+                st.info(recommendation_text)
 
-                st.dataframe(
-                    results["assignment_comparison"],
-                    use_container_width=True
+            else:
+                st.info(
+                    "Recommended action: Keep the current facility "
+                    "configuration. The optimizer did not identify "
+                    "a lower-cost facility network."
                 )
 
-            except Exception as error:
-                st.error(str(error))
+            st.subheader("Facility Recommendations")
+
+            st.dataframe(
+                results["facility_comparison"],
+                use_container_width=True
+            )
+
+            st.subheader("Customer Assignment Changes")
+
+            st.dataframe(
+                results["assignment_comparison"],
+                use_container_width=True
+            )
+
+        except Exception as error:
+            st.error(str(error))
 
 if tool == "Transportation Optimizer":
     st.header("Transportation Optimizer")
