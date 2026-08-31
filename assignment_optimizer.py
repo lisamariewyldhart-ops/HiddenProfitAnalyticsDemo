@@ -6,10 +6,33 @@ def run_assignment_optimizer(csv_file="assignment_data.csv"):
     # -----------------------------
     # LOAD BUSINESS DATA
     # -----------------------------
-    data = pd.read_csv(csv_file)
+    try:
+        data = pd.read_csv(csv_file)
+
+    except pd.errors.EmptyDataError:
+        raise ValueError(
+            "The Assignment CSV is empty. "
+            "Please download the Assignment template, enter your data, "
+            "and upload the completed file."
+        )
+
+    except pd.errors.ParserError:
+        raise ValueError(
+            "The Assignment CSV could not be read correctly. "
+            "Please make sure it is a valid CSV file and has not been "
+            "merged, reformatted, or saved with an unusual delimiter."
+        )
+
+    if data.empty:
+        raise ValueError(
+            "The Assignment CSV does not contain any assignment data."
+        )
+
+    # Remove accidental spaces from column names
+    data.columns = data.columns.str.strip()
 
     # -----------------------------
-    # VALIDATE INPUT DATA
+    # VALIDATE REQUIRED COLUMNS
     # -----------------------------
     required_columns = {
         "Employee",
@@ -22,46 +45,84 @@ def run_assignment_optimizer(csv_file="assignment_data.csv"):
 
     if missing_columns:
         raise ValueError(
-            f"Missing required columns: {', '.join(missing_columns)}"
+            "Your Assignment file is missing the required column(s): "
+            + ", ".join(sorted(missing_columns))
+            + ". Please use the downloadable Assignment CSV template "
+            "and keep the column names exactly as shown."
         )
 
-    if data[list(required_columns)].isnull().any().any():
+    # -----------------------------
+    # CLEAN TEXT FIELDS
+    # -----------------------------
+    data["Employee"] = (
+        data["Employee"]
+        .astype(str)
+        .str.strip()
+    )
+
+    data["Task"] = (
+        data["Task"]
+        .astype(str)
+        .str.strip()
+    )
+
+    if (
+        data["Employee"].eq("").any()
+        or data["Task"].eq("").any()
+    ):
         raise ValueError(
-            "The CSV contains blank values in one or more required columns."
+            "Employee and Task names cannot be blank."
         )
 
+    # -----------------------------
+    # CHECK FOR BLANK REQUIRED VALUES
+    # -----------------------------
+    if data[
+        ["Employee", "Task", "Cost", "CurrentAssignment"]
+    ].isnull().any().any():
+        raise ValueError(
+            "The Assignment file contains blank values. "
+            "Every row must include an Employee, Task, Cost, "
+            "and CurrentAssignment value."
+        )
+
+    # -----------------------------
+    # VALIDATE COST
+    # -----------------------------
     data["Cost"] = pd.to_numeric(
         data["Cost"],
         errors="coerce"
     )
 
+    if data["Cost"].isnull().any():
+        raise ValueError(
+            "One or more Cost values are not numeric. "
+            "Enter numbers only in the Cost column."
+        )
+
+    if (data["Cost"] < 0).any():
+        raise ValueError(
+            "Cost values cannot be negative."
+        )
+
+    # -----------------------------
+    # VALIDATE CURRENT ASSIGNMENT
+    # -----------------------------
     data["CurrentAssignment"] = pd.to_numeric(
         data["CurrentAssignment"],
         errors="coerce"
     )
 
-    if data["Cost"].isnull().any():
-        raise ValueError(
-            "All Cost values must be numeric."
-        )
-
     if data["CurrentAssignment"].isnull().any():
         raise ValueError(
-            "CurrentAssignment values must be 0 or 1."
+            "CurrentAssignment must contain only 0 or 1. "
+            "Use 1 for the employee's current task and 0 otherwise."
         )
 
     if not data["CurrentAssignment"].isin([0, 1]).all():
         raise ValueError(
-            "CurrentAssignment values must be either 0 or 1."
-        )
-
-    duplicates = data.duplicated(
-        subset=["Employee", "Task"]
-    )
-
-    if duplicates.any():
-        raise ValueError(
-            "Duplicate Employee/Task combinations were found."
+            "CurrentAssignment must contain only 0 or 1. "
+            "Use 1 for a current assignment and 0 for all other combinations."
         )
 
     # -----------------------------
@@ -69,6 +130,24 @@ def run_assignment_optimizer(csv_file="assignment_data.csv"):
     # -----------------------------
     employees = data["Employee"].unique().tolist()
     tasks = data["Task"].unique().tolist()
+
+    if not employees:
+        raise ValueError(
+            "No employees were found in the Assignment file."
+        )
+
+    if not tasks:
+        raise ValueError(
+            "No tasks were found in the Assignment file."
+        )
+
+    if len(tasks) > len(employees):
+        raise ValueError(
+            f"The file contains {len(tasks)} tasks but only "
+            f"{len(employees)} employees. "
+            "This version requires at least as many employees as tasks "
+            "because each employee may receive at most one task."
+        )
 
     # -----------------------------
     # CHECK ALL EMPLOYEE-TASK COMBINATIONS
@@ -94,7 +173,9 @@ def run_assignment_optimizer(csv_file="assignment_data.csv"):
         )
 
         raise ValueError(
-            f"Missing assignment cost data for: {missing_text}"
+            "Assignment cost information is missing for: "
+            f"{missing_text}. "
+            "Every employee must have a Cost row for every task."
         )
 
     # -----------------------------
@@ -104,20 +185,38 @@ def run_assignment_optimizer(csv_file="assignment_data.csv"):
         data.groupby("Task")["CurrentAssignment"].sum()
     )
 
-    if not (current_task_counts == 1).all():
+    invalid_tasks = current_task_counts[
+        current_task_counts != 1
+    ]
+
+    if not invalid_tasks.empty:
+        task_text = ", ".join(
+            invalid_tasks.index.tolist()
+        )
+
         raise ValueError(
-            "Each task must have exactly one current assignment."
+            "Each task must have exactly one current assignment. "
+            f"Please check: {task_text}."
         )
 
     current_employee_counts = (
         data.groupby("Employee")["CurrentAssignment"].sum()
     )
 
-    if (current_employee_counts > 1).any():
-        raise ValueError(
-            "An employee cannot currently be assigned to more than one task."
+    invalid_employees = current_employee_counts[
+        current_employee_counts > 1
+    ]
+
+    if not invalid_employees.empty:
+        employee_text = ", ".join(
+            invalid_employees.index.tolist()
         )
 
+        raise ValueError(
+            "An employee cannot currently be assigned to more than "
+            f"one task in this version. Please check: {employee_text}."
+        )
+  
     # -----------------------------
     # CREATE COST DICTIONARY
     # -----------------------------
@@ -299,7 +398,7 @@ if __name__ == "__main__":
                 f"{row['Employee']}: "
                 f"No change"
             )
-             
+                
     print(
         f"\nCurrent Total Cost: "
         f"${results['current_cost']:,.2f}"
