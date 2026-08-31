@@ -6,10 +6,32 @@ def run_set_covering_optimizer(csv_file="set_covering_data.csv"):
     # -----------------------------
     # LOAD BUSINESS DATA
     # -----------------------------
-    data = pd.read_csv(csv_file)
+    try:
+        data = pd.read_csv(csv_file)
+
+    except pd.errors.EmptyDataError:
+        raise ValueError(
+            "The Set Covering CSV is empty. "
+            "Please download the Set Covering template, enter your data, "
+            "and upload the completed file."
+        )
+
+    except pd.errors.ParserError:
+        raise ValueError(
+            "The Set Covering CSV could not be read correctly. "
+            "Please make sure it is a valid CSV file and has not been "
+            "reformatted or saved with an unusual delimiter."
+        )
+
+    if data.empty:
+        raise ValueError(
+            "The Set Covering CSV does not contain any options."
+        )
+
+    data.columns = data.columns.str.strip()
 
     # -----------------------------
-    # VALIDATE INPUT DATA
+    # VALIDATE REQUIRED COLUMNS
     # -----------------------------
     required_columns = {
         "Option",
@@ -21,46 +43,102 @@ def run_set_covering_optimizer(csv_file="set_covering_data.csv"):
 
     if missing_columns:
         raise ValueError(
-            f"Missing required columns: {', '.join(missing_columns)}"
+            "Your Set Covering file is missing the required column(s): "
+            + ", ".join(sorted(missing_columns))
+            + ". Please use the downloadable Set Covering CSV template "
+              "and keep the column names exactly as shown."
         )
 
-    if data[list(required_columns)].isnull().any().any():
+    # -----------------------------
+    # CLEAN OPTION NAMES
+    # -----------------------------
+    data["Option"] = (
+        data["Option"]
+        .astype(str)
+        .str.strip()
+    )
+
+    if data["Option"].eq("").any():
         raise ValueError(
-            "The CSV contains blank values in one or more required columns."
+            "Option names cannot be blank."
         )
 
+    # -----------------------------
+    # CHECK BLANK REQUIRED VALUES
+    # -----------------------------
+    if data[
+        ["Option", "Cost", "CurrentSelected"]
+    ].isnull().any().any():
+        raise ValueError(
+            "The Set Covering file contains blank values. "
+            "Every row must include an Option, Cost, "
+            "and CurrentSelected value."
+        )
+
+    # -----------------------------
+    # VALIDATE COST
+    # -----------------------------
     data["Cost"] = pd.to_numeric(
         data["Cost"],
         errors="coerce"
     )
 
+    if data["Cost"].isnull().any():
+        raise ValueError(
+            "One or more Cost values are not numeric. "
+            "Enter numbers only in the Cost column."
+        )
+
+    if (data["Cost"] < 0).any():
+        raise ValueError(
+            "Cost values cannot be negative."
+        )
+
+    # -----------------------------
+    # VALIDATE CURRENT SELECTED
+    # -----------------------------
     data["CurrentSelected"] = pd.to_numeric(
         data["CurrentSelected"],
         errors="coerce"
     )
 
-    if data["Cost"].isnull().any():
-        raise ValueError(
-            "All Cost values must be numeric."
-        )
-
     if data["CurrentSelected"].isnull().any():
         raise ValueError(
-            "CurrentSelected values must be 0 or 1."
+            "CurrentSelected must contain only 0 or 1. "
+            "Use 1 if an option is currently selected and 0 otherwise."
         )
 
     if not data["CurrentSelected"].isin([0, 1]).all():
         raise ValueError(
-            "CurrentSelected values must be either 0 or 1."
-        )
-
-    if data["Option"].duplicated().any():
-        raise ValueError(
-            "Duplicate option names were found."
+            "CurrentSelected must contain only 0 or 1. "
+            "Use 1 for a selected option and 0 for an unselected option."
         )
 
     # -----------------------------
-    # IDENTIFY OPTIONS AND ZONES
+    # CHECK DUPLICATE OPTIONS
+    # -----------------------------
+    duplicate_options = data["Option"].duplicated(
+        keep=False
+    )
+
+    if duplicate_options.any():
+        duplicate_text = ", ".join(
+            sorted(
+                data.loc[
+                    duplicate_options,
+                    "Option"
+                ].unique()
+            )
+        )
+
+        raise ValueError(
+            "Duplicate option names were found: "
+            f"{duplicate_text}. "
+            "Each option should appear only once."
+        )
+
+    # -----------------------------
+    # IDENTIFY OPTIONS AND COVERAGE COLUMNS
     # -----------------------------
     options = data["Option"].tolist()
 
@@ -76,7 +154,9 @@ def run_set_covering_optimizer(csv_file="set_covering_data.csv"):
 
     if not zones:
         raise ValueError(
-            "At least one coverage column is required."
+            "No coverage columns were found. "
+            "Add at least one column representing a required "
+            "location, customer group, route, time period, or item."
         )
 
     # -----------------------------
@@ -90,31 +170,41 @@ def run_set_covering_optimizer(csv_file="set_covering_data.csv"):
 
         if data[zone].isnull().any():
             raise ValueError(
-                f"Coverage values in {zone} must be numeric."
+                f"Coverage values in '{zone}' must be numeric. "
+                "Enter only 1 for covered or 0 for not covered."
             )
 
         if not data[zone].isin([0, 1]).all():
             raise ValueError(
-                f"Coverage values in {zone} must be 0 or 1."
+                f"Coverage values in '{zone}' must be 0 or 1."
             )
 
         if data[zone].sum() == 0:
             raise ValueError(
-                f"{zone} is not covered by any option."
+                f"'{zone}' cannot be covered because no option "
+                "has a coverage value of 1 for that requirement."
             )
 
     # -----------------------------
     # VALIDATE CURRENT COVERAGE
     # -----------------------------
+    uncovered_current = []
+
     for zone in zones:
         current_coverage = (
             data[zone] * data["CurrentSelected"]
         ).sum()
 
         if current_coverage < 1:
-            raise ValueError(
-                f"The current configuration does not cover {zone}."
-            )
+            uncovered_current.append(zone)
+
+    if uncovered_current:
+        raise ValueError(
+            "The current configuration does not cover: "
+            + ", ".join(uncovered_current)
+            + ". At least one currently selected option must cover "
+              "each required coverage column."
+        )
 
     # -----------------------------
     # CREATE COST DICTIONARY
