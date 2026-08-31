@@ -9,8 +9,35 @@ def run_facility_location_optimizer(
     # -----------------------------
     # LOAD BUSINESS DATA
     # -----------------------------
-    facility_data = pd.read_csv(facility_file)
-    demand_data = pd.read_csv(demand_file)
+    try:
+        facility_data = pd.read_csv(facility_file)
+        demand_data = pd.read_csv(demand_file)
+
+    except pd.errors.EmptyDataError:
+        raise ValueError(
+            "One of the Facility Location CSV files is empty. "
+            "Please download the Facility Location templates, enter your data, "
+            "and upload both completed files."
+        )
+
+    except pd.errors.ParserError:
+        raise ValueError(
+            "One of the Facility Location CSV files could not be read correctly. "
+            "Please make sure both files are valid CSV files."
+        )
+
+    if facility_data.empty:
+        raise ValueError(
+            "The Facility Cost file does not contain any facility data."
+        )
+
+    if demand_data.empty:
+        raise ValueError(
+            "The Customer Demand file does not contain any customer data."
+        )
+
+    facility_data.columns = facility_data.columns.str.strip()
+    demand_data.columns = demand_data.columns.str.strip()
 
     # -----------------------------
     # VALIDATE REQUIRED COLUMNS
@@ -37,14 +64,97 @@ def run_facility_location_optimizer(
 
     if missing_facility_columns:
         raise ValueError(
-            "Missing facility columns: "
+            "Your Facility Cost file is missing the required column(s): "
             + ", ".join(sorted(missing_facility_columns))
+            + ". Please use the downloadable Facility Cost template "
+              "and keep the column names exactly as shown."
         )
 
     if missing_demand_columns:
         raise ValueError(
-            "Missing demand columns: "
+            "Your Customer Demand file is missing the required column(s): "
             + ", ".join(sorted(missing_demand_columns))
+            + ". Please use the downloadable Customer Demand template "
+              "and keep the column names exactly as shown."
+        )
+
+    # -----------------------------
+    # CLEAN TEXT FIELDS
+    # -----------------------------
+    facility_data["Facility"] = (
+        facility_data["Facility"]
+        .astype(str)
+        .str.strip()
+    )
+
+    demand_data["Customer"] = (
+        demand_data["Customer"]
+        .astype(str)
+        .str.strip()
+    )
+
+    demand_data["CurrentFacility"] = (
+        demand_data["CurrentFacility"]
+        .astype(str)
+        .str.strip()
+    )
+
+    if facility_data["Facility"].eq("").any():
+        raise ValueError(
+            "Facility names cannot be blank."
+        )
+
+    if demand_data["Customer"].eq("").any():
+        raise ValueError(
+            "Customer names cannot be blank."
+        )
+
+    if demand_data["CurrentFacility"].eq("").any():
+        raise ValueError(
+            "CurrentFacility values cannot be blank."
+        )
+
+    # -----------------------------
+    # CHECK DUPLICATES
+    # -----------------------------
+    duplicate_facilities = facility_data["Facility"].duplicated(
+        keep=False
+    )
+
+    if duplicate_facilities.any():
+        duplicate_text = ", ".join(
+            sorted(
+                facility_data.loc[
+                    duplicate_facilities,
+                    "Facility"
+                ].unique()
+            )
+        )
+
+        raise ValueError(
+            "Duplicate facility names were found: "
+            f"{duplicate_text}. "
+            "Each facility should appear only once."
+        )
+
+    duplicate_customers = demand_data["Customer"].duplicated(
+        keep=False
+    )
+
+    if duplicate_customers.any():
+        duplicate_text = ", ".join(
+            sorted(
+                demand_data.loc[
+                    duplicate_customers,
+                    "Customer"
+                ].unique()
+            )
+        )
+
+        raise ValueError(
+            "Duplicate customer names were found: "
+            f"{duplicate_text}. "
+            "Each customer should appear only once in the demand file."
         )
 
     # -----------------------------
@@ -61,6 +171,11 @@ def run_facility_location_optimizer(
             "CurrentOpen"
         ]
     ]
+
+    if not customers:
+        raise ValueError(
+            "No customer service-cost columns were found in the Facility Cost file."
+        )
 
     # -----------------------------
     # VALIDATE NUMERIC DATA
@@ -82,22 +197,33 @@ def run_facility_location_optimizer(
 
     if facility_data["FixedCost"].isnull().any():
         raise ValueError(
-            "All FixedCost values must be numeric."
+            "One or more FixedCost values are not numeric."
+        )
+
+    if (facility_data["FixedCost"] < 0).any():
+        raise ValueError(
+            "FixedCost values cannot be negative."
         )
 
     if facility_data["CurrentOpen"].isnull().any():
         raise ValueError(
-            "CurrentOpen values must be 0 or 1."
+            "CurrentOpen must contain only 0 or 1."
         )
 
     if not facility_data["CurrentOpen"].isin([0, 1]).all():
         raise ValueError(
-            "CurrentOpen values must be either 0 or 1."
+            "CurrentOpen must contain only 0 or 1. "
+            "Use 1 for a currently open facility and 0 otherwise."
         )
 
     if demand_data["Demand"].isnull().any():
         raise ValueError(
-            "All Demand values must be numeric."
+            "One or more Demand values are not numeric."
+        )
+
+    if (demand_data["Demand"] < 0).any():
+        raise ValueError(
+            "Demand values cannot be negative."
         )
 
     for customer in customers:
@@ -108,11 +234,16 @@ def run_facility_location_optimizer(
 
         if facility_data[customer].isnull().any():
             raise ValueError(
-                f"All service costs for {customer} must be numeric."
+                f"Service-cost values for '{customer}' must be numeric."
+            )
+
+        if (facility_data[customer] < 0).any():
+            raise ValueError(
+                f"Service-cost values for '{customer}' cannot be negative."
             )
 
     # -----------------------------
-    # VALIDATE CUSTOMERS
+    # VALIDATE CUSTOMER MATCHING
     # -----------------------------
     demand_customers = set(demand_data["Customer"])
 
@@ -120,10 +251,23 @@ def run_facility_location_optimizer(
         set(customers) - demand_customers
     )
 
+    extra_customers = (
+        demand_customers - set(customers)
+    )
+
     if missing_customers:
         raise ValueError(
-            "Missing demand data for: "
+            "The Customer Demand file is missing data for: "
             + ", ".join(sorted(missing_customers))
+            + ". Customer names must match the customer column names "
+              "in the Facility Cost file."
+        )
+
+    if extra_customers:
+        raise ValueError(
+            "The Customer Demand file contains customer names that do not "
+            "exist as service-cost columns in the Facility Cost file: "
+            + ", ".join(sorted(extra_customers))
         )
 
     # -----------------------------
@@ -163,13 +307,14 @@ def run_facility_location_optimizer(
 
         if facility not in facilities:
             raise ValueError(
-                f"{customer} is assigned to unknown facility: {facility}"
+                f"{customer} is currently assigned to '{facility}', "
+                "but that facility does not exist in the Facility Cost file."
             )
 
         if current_open[facility] != 1:
             raise ValueError(
-                f"{customer} is assigned to {facility}, "
-                "but that facility is not currently open."
+                f"{customer} is currently assigned to {facility}, "
+                "but that facility is marked CurrentOpen = 0."
             )
 
     # -----------------------------
