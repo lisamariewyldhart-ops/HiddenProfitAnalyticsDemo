@@ -531,6 +531,80 @@ if tool == "Facility Location Optimizer":
                     f"{results['savings_percent']:.2f}%"
                 )
 
+                facility_comparison = results["facility_comparison"]
+                assignment_comparison = results["assignment_comparison"]
+
+                keep_open = facility_comparison[
+                    facility_comparison["Recommendation"] == "Keep Open"
+                ]["Facility"].tolist()
+
+                to_open = facility_comparison[
+                    facility_comparison["Recommendation"] == "Open"
+                ]["Facility"].tolist()
+
+                to_close = facility_comparison[
+                    facility_comparison["Recommendation"] == "Close"
+                ]["Facility"].tolist()
+
+                changed_customers = assignment_comparison[
+                    assignment_comparison["Changed"] == True
+                ]
+
+                action_parts = []
+
+                if keep_open:
+                    action_parts.append(
+                        "keep " + ", ".join(keep_open) + " open"
+                    )
+
+                if to_open:
+                    action_parts.append(
+                        "open " + ", ".join(to_open)
+                    )
+
+                if to_close:
+                    action_parts.append(
+                        "close " + ", ".join(to_close)
+                    )
+
+                customer_changes = []
+
+                for _, row in changed_customers.iterrows():
+                    customer_changes.append(
+                        f"{row['Customer']} from "
+                        f"{row['CurrentFacility']} to "
+                        f"{row['OptimizedFacility']}"
+                    )
+
+                if results["savings"] > 0:
+                    recommendation_text = (
+                        "Recommended action: "
+                        + "; ".join(action_parts)
+                        + "."
+                    )
+
+                    if customer_changes:
+                        recommendation_text += (
+                            " Reassign "
+                            + "; ".join(customer_changes)
+                            + "."
+                        )
+
+                    recommendation_text += (
+                        f" This reduces estimated total cost by "
+                        f"${results['savings']:,.2f}, or "
+                        f"{results['savings_percent']:.2f}%."
+                    )
+
+                    st.info(recommendation_text)
+
+                else:
+                    st.info(
+                        "Recommended action: Keep the current facility "
+                        "configuration. The optimizer did not identify "
+                        "a lower-cost facility network."
+                    )
+
                 st.subheader("Facility Recommendations")
 
                 st.dataframe(
