@@ -141,6 +141,41 @@ if tool == "Assignment Optimizer":
                 )
 
                 st.subheader("Recommended Assignments")
+                changed_rows = results["comparison"][
+                    results["comparison"]["Changed"] == True
+                ]
+
+                if results["savings"] > 0:
+                    change_text = []
+
+                    for _, row in changed_rows.iterrows():
+                        change_text.append(
+                            f"{row['Employee']} from "
+                            f"{row['CurrentTask']} to "
+                            f"{row['OptimizedTask']}"
+                        )
+
+                    if change_text:
+                        recommendation_text = (
+                            "Recommended action: Reassign "
+                            + "; ".join(change_text)
+                            + f". This reduces estimated assignment cost by "
+                            f"${results['savings']:,.2f}, or "
+                            f"{results['savings_percent']:.2f}%."
+                        )
+                    else:
+                        recommendation_text = (
+                            "Recommended action: Keep the current assignments. "
+                            "No assignment changes are required."
+                        )
+
+                    st.info(recommendation_text)
+
+                else:
+                    st.info(
+                        "Recommended action: Keep the current assignments. "
+                        "The optimizer did not identify a lower-cost assignment."
+                    )
 
                 st.dataframe(
                     results["assignments"],
