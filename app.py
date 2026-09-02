@@ -25,6 +25,24 @@ if "analysis_ready" not in st.session_state:
 if "profit_guide_step" not in st.session_state:
     st.session_state.profit_guide_step = 1
 
+if "assignment_guide_step" not in st.session_state:
+    st.session_state.assignment_guide_step = 1
+
+if "set_covering_guide_step" not in st.session_state:
+    st.session_state.set_covering_guide_step = 1
+
+if "facility_guide_step" not in st.session_state:
+    st.session_state.facility_guide_step = 1
+
+if "transportation_guide_step" not in st.session_state:
+    st.session_state.transportation_guide_step = 1
+
+if "scheduling_guide_step" not in st.session_state:
+    st.session_state.scheduling_guide_step = 1
+
+if "resource_allocation_guide_step" not in st.session_state:
+    st.session_state.resource_allocation_guide_step = 1
+
 st.set_page_config(
     page_title="Hidden Profit Analytics",
     layout="wide",
@@ -110,6 +128,18 @@ if tool == "Assignment Optimizer":
         "to the current assignment."
     )
 
+    assignment_step1_placeholder = st.empty()
+
+    if (
+        guided_mode
+        and st.session_state.assignment_guide_step == 1
+    ):
+        assignment_step1_placeholder.info(
+            "⬇️ **Step 1 of 3 — Prepare Your Assignment Data**\n\n"
+            "Download the CSV template below, replace the sample data "
+            "with your own assignments and costs, then save the completed file."
+        )
+
     assignment_template = pd.DataFrame(
     {
         "Employee": [
@@ -161,10 +191,41 @@ if tool == "Assignment Optimizer":
         key="assignment_upload"
     )
 
+    assignment_guide_placeholder = st.empty()
+
+    if (
+        guided_mode
+        and st.session_state.assignment_guide_step == 2
+    ):
+        assignment_guide_placeholder.info(
+            "⬇️ **Step 2 of 3 — Review Your Optimization Results**\n\n"
+            "Your file has been uploaded. Hidden Profit Analytics will "
+            "validate the data and calculate the lowest-cost assignment below."
+        )
+
+    elif (
+        guided_mode
+        and st.session_state.assignment_guide_step == 3
+    ):
+        assignment_guide_placeholder.success(
+            "✅ **Step 3 of 3 — Review the Recommendation**\n\n"
+            "Your optimization is complete. Review the recommended assignments, "
+            "potential savings, and assignment changes below."
+        )
+
     if assignment_file is not None:
         try:
             results = run_assignment_optimizer(assignment_file)
+            if guided_mode:
+                st.session_state.assignment_guide_step = 3
 
+                assignment_step1_placeholder.empty()
+
+                assignment_guide_placeholder.success(
+                    "✅ **Step 3 of 3 — Review the Recommendation**\n\n"
+                    "Your optimization is complete. Review the recommended assignments, "
+                    "potential savings, and assignment changes below."
+                )
             st.success("Optimization completed successfully.")
 
             col1, col2, col3, col4 = st.columns(4)
@@ -268,6 +329,18 @@ if tool == "Set Covering Optimizer":
         "needed to cover every required area at least once."
     )
 
+    set_covering_step1_placeholder = st.empty()
+
+    if (
+        guided_mode
+        and st.session_state.set_covering_guide_step == 1
+    ):
+        set_covering_step1_placeholder.info(
+            "⬇️ **Step 1 of 3 — Prepare Your Coverage Data**\n\n"
+            "Download the CSV template below, replace the sample options, costs, "
+            "and coverage values with your own data, then save the completed file."
+        )
+
     set_covering_template = pd.DataFrame(
         {
             "Option": [
@@ -347,9 +420,38 @@ if tool == "Set Covering Optimizer":
         key="set_covering_upload"
     )
 
+    if (
+        guided_mode
+        and set_covering_file is not None
+        and st.session_state.set_covering_guide_step == 1
+    ):
+        st.session_state.set_covering_guide_step = 2
+        st.rerun()
+
+    set_covering_guide_placeholder = st.empty()
+
+    if (
+        guided_mode
+        and st.session_state.set_covering_guide_step == 2
+    ):
+        set_covering_guide_placeholder.info(
+            "⬇️ **Step 2 of 3 — Review Your Optimization Results**\n\n"
+            "Your file has been uploaded. Hidden Profit Analytics will validate "
+            "the data and calculate the lowest-cost coverage plan below."
+        )
+
     if set_covering_file is not None:
         try:
             results = run_set_covering_optimizer(set_covering_file)
+
+            if guided_mode:
+                st.session_state.set_covering_guide_step = 3
+
+                set_covering_guide_placeholder.success(
+                    "✅ **Step 3 of 3 — Review the Recommendation**\n\n"
+                    "Your optimization is complete. Review the recommended options, "
+                    "potential savings, and configuration changes below."
+                )
 
             st.success("Optimization completed successfully.")
 
@@ -471,6 +573,19 @@ if tool == "Facility Location Optimizer":
         "and how customers should be assigned to minimize total cost."
     )
 
+    facility_guide_placeholder = st.empty()
+
+    if (
+        guided_mode
+        and st.session_state.facility_guide_step == 1
+    ):
+        facility_guide_placeholder.info(
+            "⬇️ **Step 1 of 3 — Prepare Your Facility Location Data**\n\n"
+            "Download both CSV templates below. Replace the sample values "
+            "with your facility costs, customer service costs, customer demand, "
+            "and current assignments, then save both completed files."
+        )
+
     facility_location_template = pd.DataFrame(
         {
             "Facility": [
@@ -585,12 +700,47 @@ if tool == "Facility Location Optimizer":
         key="facility_demand_upload"
     )
 
+    if (
+        guided_mode
+        and (facility_file is not None or demand_file is not None)
+        and st.session_state.facility_guide_step == 1
+    ):
+        st.session_state.facility_guide_step = 2
+        st.rerun()
+
+    if (
+        guided_mode
+        and st.session_state.facility_guide_step == 2
+    ):
+        if facility_file is not None and demand_file is not None:
+            facility_guide_placeholder.info(
+                "⬇️ **Step 2 of 3 — Review Your Optimization Results**\n\n"
+                "Both files have been uploaded. Hidden Profit Analytics will validate "
+                "the data and calculate the lowest-cost facility configuration below."
+            )
+        else:
+            facility_guide_placeholder.info(
+                "⬇️ **Step 2 of 3 — Upload Both Data Files**\n\n"
+                "Upload both your completed Facility Cost and Customer Demand CSV files "
+                "to continue."
+            )
+
     if facility_file is not None and demand_file is not None:
         try:
             results = run_facility_location_optimizer(
                 facility_file,
                 demand_file
             )
+
+            if guided_mode:
+                st.session_state.facility_guide_step = 3
+
+                facility_guide_placeholder.success(
+                    "✅ **Step 3 of 3 — Review the Recommendation**\n\n"
+                    "Your optimization is complete. Review which facilities should "
+                    "open, close, or remain open, the customer assignment changes, "
+                    "and the potential savings below."
+                )
 
             st.success("Optimization completed successfully.")
 
@@ -734,6 +884,19 @@ if tool == "Transportation Optimizer":
         "Determine how much should be shipped from each source to each "
         "destination to satisfy demand at the lowest total transportation cost."
     )
+
+    transportation_guide_placeholder = st.empty()
+
+    if (
+        guided_mode
+        and st.session_state.transportation_guide_step == 1
+    ):
+        transportation_guide_placeholder.info(
+            "⬇️ **Step 1 of 3 — Prepare Your Transportation Data**\n\n"
+            "Download all four CSV templates below. Replace the sample values "
+            "with your transportation costs, available supply, destination demand, "
+            "and current shipping plan, then save all four completed files."
+        )
 
     transportation_costs_template = pd.DataFrame(
         {
@@ -903,6 +1066,49 @@ if tool == "Transportation Optimizer":
     )
 
     if (
+        guided_mode
+        and any(
+            file is not None
+            for file in [
+                cost_file,
+                supply_file,
+                demand_file,
+                current_file
+            ]
+        )
+        and st.session_state.transportation_guide_step == 1
+    ):
+        st.session_state.transportation_guide_step = 2
+        st.rerun()
+
+    if (
+        guided_mode
+        and st.session_state.transportation_guide_step == 2
+    ):
+        all_transportation_files_uploaded = all(
+            file is not None
+            for file in [
+                cost_file,
+                supply_file,
+                demand_file,
+                current_file
+            ]
+        )
+
+        if all_transportation_files_uploaded:
+            transportation_guide_placeholder.info(
+                "⬇️ **Step 2 of 3 — Review Your Optimization Results**\n\n"
+                "All four files have been uploaded. Hidden Profit Analytics will "
+                "validate the data and calculate the lowest-cost shipping plan below."
+            )
+        else:
+            transportation_guide_placeholder.info(
+                "⬇️ **Step 2 of 3 — Upload All Four Data Files**\n\n"
+                "Upload your completed Transportation Cost, Supply, Demand, "
+                "and Current Shipping Plan CSV files to continue."
+            )
+
+    if (
         cost_file is not None
         and supply_file is not None
         and demand_file is not None
@@ -915,6 +1121,15 @@ if tool == "Transportation Optimizer":
                 demand_file,
                 current_file
             )
+
+            if guided_mode:
+                st.session_state.transportation_guide_step = 3
+
+                transportation_guide_placeholder.success(
+                    "✅ **Step 3 of 3 — Review the Recommendation**\n\n"
+                    "Your optimization is complete. Review the recommended shipping plan, "
+                    "route changes, and potential savings below."
+                )
 
             st.success("Optimization completed successfully.")
 
@@ -1007,6 +1222,19 @@ if tool == "Scheduling Optimizer":
         "Build a minimum-cost employee schedule while meeting staffing "
         "requirements and respecting employee availability."
     )
+
+    scheduling_guide_placeholder = st.empty()
+
+    if (
+        guided_mode
+        and st.session_state.scheduling_guide_step == 1
+    ):
+        scheduling_guide_placeholder.info(
+            "⬇️ **Step 1 of 3 — Prepare Your Scheduling Data**\n\n"
+            "Download all four CSV templates below. Replace the sample values "
+            "with your employee scheduling costs, staffing requirements, "
+            "availability, and current schedule, then save all four completed files."
+        )
 
     scheduling_costs_template = pd.DataFrame(
         {
@@ -1186,6 +1414,49 @@ if tool == "Scheduling Optimizer":
     )
 
     if (
+        guided_mode
+        and any(
+            file is not None
+            for file in [
+                cost_file,
+                requirements_file,
+                availability_file,
+                current_file
+            ]
+        )
+        and st.session_state.scheduling_guide_step == 1
+    ):
+        st.session_state.scheduling_guide_step = 2
+        st.rerun()
+
+    if (
+        guided_mode
+        and st.session_state.scheduling_guide_step == 2
+    ):
+        all_scheduling_files_uploaded = all(
+            file is not None
+            for file in [
+                cost_file,
+                requirements_file,
+                availability_file,
+                current_file
+            ]
+        )
+
+        if all_scheduling_files_uploaded:
+            scheduling_guide_placeholder.info(
+                "⬇️ **Step 2 of 3 — Review Your Optimization Results**\n\n"
+                "All four files have been uploaded. Hidden Profit Analytics will "
+                "validate the data and calculate the lowest-cost employee schedule below."
+            )
+        else:
+            scheduling_guide_placeholder.info(
+                "⬇️ **Step 2 of 3 — Upload All Four Data Files**\n\n"
+                "Upload your completed Scheduling Cost, Staffing Requirements, "
+                "Availability, and Current Schedule CSV files to continue."
+            )
+
+    if (
         cost_file is not None
         and requirements_file is not None
         and availability_file is not None
@@ -1198,6 +1469,15 @@ if tool == "Scheduling Optimizer":
                 availability_file,
                 current_file
             )
+
+            if guided_mode:
+                st.session_state.scheduling_guide_step = 3
+
+                scheduling_guide_placeholder.success(
+                    "✅ **Step 3 of 3 — Review the Recommendation**\n\n"
+                    "Your optimization is complete. Review the recommended employee schedule, "
+                    "assignment changes, and potential savings below."
+                )
 
             st.success("Optimization completed successfully.")
 
@@ -1308,6 +1588,19 @@ if tool == "Resource Allocation Optimizer":
         "across competing initiatives to maximize total business value."
     )
 
+    resource_allocation_guide_placeholder = st.empty()
+
+    if (
+        guided_mode
+        and st.session_state.resource_allocation_guide_step == 1
+    ):
+        resource_allocation_guide_placeholder.info(
+            "⬇️ **Step 1 of 3 — Prepare Your Resource Allocation Data**\n\n"
+            "Download both CSV templates below. Replace the sample values "
+            "with your initiatives, expected value, resource requirements, "
+            "current allocation, and available resource limits, then save both files."
+        )
+
     resource_allocation_template = pd.DataFrame(
         {
             "Initiative": [
@@ -1415,6 +1708,39 @@ if tool == "Resource Allocation Optimizer":
     )
 
     if (
+        guided_mode
+        and (
+            allocation_file is not None
+            or limits_file is not None
+        )
+        and st.session_state.resource_allocation_guide_step == 1
+    ):
+        st.session_state.resource_allocation_guide_step = 2
+        st.rerun()
+
+    if (
+        guided_mode
+        and st.session_state.resource_allocation_guide_step == 2
+    ):
+        all_resource_files_uploaded = (
+            allocation_file is not None
+            and limits_file is not None
+        )
+
+        if all_resource_files_uploaded:
+            resource_allocation_guide_placeholder.info(
+                "⬇️ **Step 2 of 3 — Review Your Optimization Results**\n\n"
+                "Both files have been uploaded. Hidden Profit Analytics will "
+                "validate the data and calculate the optimal resource allocation below."
+            )
+        else:
+            resource_allocation_guide_placeholder.info(
+                "⬇️ **Step 2 of 3 — Upload Both Data Files**\n\n"
+                "Upload your completed Resource Allocation and Resource Limits "
+                "CSV files to continue."
+            )
+
+    if (
         allocation_file is not None
         and limits_file is not None
     ):
@@ -1423,6 +1749,16 @@ if tool == "Resource Allocation Optimizer":
                 allocation_file,
                 limits_file
             )
+
+            if guided_mode:
+                st.session_state.resource_allocation_guide_step = 3
+
+                resource_allocation_guide_placeholder.success(
+                    "✅ **Step 3 of 3 — Review the Recommendation**\n\n"
+                    "Your optimization is complete. Review the recommended "
+                    "resource allocation, allocation changes, and potential "
+                    "profit improvement below."
+                )
 
             st.success("Optimization completed successfully.")
 
