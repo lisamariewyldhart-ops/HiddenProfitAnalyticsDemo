@@ -126,6 +126,35 @@ def run_assignment_optimizer(csv_file="assignment_data.csv"):
         )
 
     # -----------------------------
+    # CHECK FOR DUPLICATE EMPLOYEE-TASK COMBINATIONS
+    # -----------------------------
+    duplicate_rows = data.duplicated(
+        subset=["Employee", "Task"],
+        keep=False
+    )
+
+    if duplicate_rows.any():
+        duplicate_pairs = (
+            data.loc[
+                duplicate_rows,
+                ["Employee", "Task"]
+            ]
+            .drop_duplicates()
+            .apply(
+                lambda row: f"{row['Employee']} - {row['Task']}",
+                axis=1
+            )
+            .tolist()
+        )
+
+        raise ValueError(
+            "Each Employee-Task combination must appear only once. "
+            "Please remove duplicate combinations: "
+            + ", ".join(duplicate_pairs)
+            + "."
+        )   
+
+    # -----------------------------
     # BUILD SETS
     # -----------------------------
     employees = data["Employee"].unique().tolist()
