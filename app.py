@@ -22,9 +22,17 @@ from report_generator import (
 if "analysis_ready" not in st.session_state:
     st.session_state.analysis_ready = False
 
+if "profit_guide_step" not in st.session_state:
+    st.session_state.profit_guide_step = 1
+
 st.set_page_config(
     page_title="Hidden Profit Analytics",
     layout="wide",
+)
+
+st.sidebar.title("Hidden Profit Analytics")
+st.sidebar.caption(
+    "Optimization tools for smarter business decisions."
 )
 
 tool = st.sidebar.selectbox(
@@ -39,6 +47,47 @@ tool = st.sidebar.selectbox(
         "Resource Allocation Optimizer",
     ]
 )
+
+st.sidebar.caption(
+    "Choose the tool that best matches the business decision you want to improve."
+)
+
+with st.sidebar.expander("Not sure which tool to choose?"):
+    st.markdown(
+        """
+        **Profit Analyzer**  
+        Identify hidden profit opportunities and evaluate ways to improve profit margin.
+
+        **Assignment Optimizer**  
+        Assign employees, teams, or resources to tasks at the lowest total cost.
+
+        **Set Covering Optimizer**  
+        Choose the lowest-cost combination of locations, suppliers, or resources needed to cover all requirements.
+
+        **Facility Location Optimizer**  
+        Decide which facilities to open, keep, or close and which customers each facility should serve.
+
+        **Transportation Optimizer**  
+        Determine how much to ship from each source to each destination at the lowest transportation cost.
+
+        **Scheduling Optimizer**  
+        Build a lower-cost employee schedule while meeting staffing and availability requirements.
+
+        **Resource Allocation Optimizer**  
+        Allocate limited budget and staff hours across initiatives to maximize profit or business value.
+        """
+    )
+
+guided_mode = st.sidebar.toggle(
+    "Guided Mode",
+    value=True,
+    help="Show step-by-step guidance while using Hidden Profit Analytics."
+)
+
+if guided_mode:
+    st.sidebar.caption(
+        "Guided Mode is on. The app will show the next recommended step as you work."
+    )
 
 st.info(
     "Private Beta: Hidden Profit Analytics is currently being tested with a limited group of users. "
@@ -1603,6 +1652,16 @@ if tool == "Profit Analyzer":
     # STEP 1: BUSINESS INFORMATION
     # ==========================================
 
+    if (
+        guided_mode
+        and tool == "Profit Analyzer"
+        and st.session_state.profit_guide_step == 1
+    ):
+        st.sidebar.info(
+            "⬇️ **Step 1 of 4 — Business Information**\n\n"
+            "Enter your company name and target profit margin below."
+        )
+
     st.sidebar.header("Client Setup")
 
     with st.sidebar.expander(
@@ -1632,11 +1691,32 @@ if tool == "Profit Analyzer":
             )
         )
 
+        if (
+            guided_mode
+            and st.session_state.profit_guide_step == 1
+        ):
+            if st.button(
+                "Continue to Financial Data →",
+                use_container_width=True
+            ):
+                st.session_state.profit_guide_step = 2
+                st.rerun()
+
     target_margin = target_percent / 100
 
     # ==========================================
     # STEP 2: FINANCIAL DATA
     # ==========================================
+
+    if (
+        guided_mode
+        and st.session_state.profit_guide_step == 2
+    ):
+        st.sidebar.info(
+            "⬇️ **Step 2 of 4 — Financial Data**\n\n"
+            "Download the CSV template, enter your financial data, "
+            "then upload the completed file below."
+        )
 
     with st.sidebar.expander(
         "2. Financial Data",
@@ -1670,9 +1750,27 @@ if tool == "Profit Analyzer":
             )
         ) 
 
+        if (
+            guided_mode
+            and st.session_state.profit_guide_step == 2
+            and uploaded_file is not None
+        ):
+            st.session_state.profit_guide_step = 3
+            st.rerun()
+
     # ==========================================
     # STEP 3: IMPROVEMENT ASSUMPTIONS
     # ==========================================
+
+    if (
+        guided_mode
+        and st.session_state.profit_guide_step == 3
+    ):
+        st.sidebar.info(
+            "⬇️ **Step 3 of 4 — Improvement Assumptions**\n\n"
+            "Review and adjust the assumptions below to reflect "
+            "realistic improvements for this business."
+        )
 
     with st.sidebar.expander(
         "3. Improvement Assumptions",
@@ -1807,6 +1905,17 @@ if tool == "Profit Analyzer":
                 )
             )   
 
+            if (
+                guided_mode
+                and st.session_state.profit_guide_step == 3
+            ):
+                if st.button(
+                    "Continue to Analysis →",
+                    use_container_width=True
+                ):
+                    st.session_state.profit_guide_step = 4
+                    st.rerun()
+
     if uploaded_file is not None:
         try:
             data = pd.read_csv(uploaded_file)
@@ -1829,12 +1938,37 @@ if tool == "Profit Analyzer":
             use_container_width=True
         )
 
+        step4_guide_placeholder = st.sidebar.empty()
+
+        if (
+            guided_mode
+            and st.session_state.profit_guide_step == 4
+        ):
+            step4_guide_placeholder.info(
+                "⬇️ **Step 4 of 4 — Run Your Analysis**\n\n"
+                "Review your setup, then click **4. Run Analysis** below "
+                "to generate your recommendations."
+            )
+
         st.sidebar.divider()
 
         st.sidebar.caption(
             "Review the client information, financial data, "
             "and improvement assumptions before running the analysis."
         )
+
+        guide_complete_placeholder = st.sidebar.empty()
+
+        if (
+            guided_mode
+            and st.session_state.profit_guide_step == 5
+            and st.session_state.get("analysis_ready", False)
+        ):
+            guide_complete_placeholder.success(
+                "✅ **Guided setup complete**\n\n"
+                "Your analysis is ready. Review the recommendations and generate "
+                "the client report when you're ready."
+            )
 
         if st.sidebar.button(
             "4. Run Analysis",
@@ -1941,6 +2075,8 @@ if tool == "Profit Analyzer":
                 f"profit opportunity at "
                 f"${profit_gap:,.2f}."
             )
+
+
 
             st.markdown("## Monthly Performance")
 
@@ -2346,7 +2482,17 @@ if tool == "Profit Analyzer":
                 st.session_state.total_opportunity = total_opportunity
                 st.session_state.largest_opportunity = largest_opportunity
                 st.session_state.best_scenario = best_scenario
-                st.session_state.custom_recommendation = custom_recommendation        
+                st.session_state.custom_recommendation = custom_recommendation
+            if guided_mode:
+                st.session_state.profit_guide_step = 5
+
+                step4_guide_placeholder.empty()
+
+                guide_complete_placeholder.success(
+                    "✅ **Guided setup complete**\n\n"
+                    "Your analysis is ready. Review the recommendations and generate "
+                    "the client report when you're ready."
+                )
 
             # ==========================================
             # SENSITIVITY ANALYSIS
