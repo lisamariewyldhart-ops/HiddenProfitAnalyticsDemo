@@ -1276,6 +1276,16 @@ if tool == "Transportation Optimizer":
             )
 
         except Exception as error:
+            if guided_mode:
+                st.session_state.transportation_guide_step = 2
+
+                transportation_guide_placeholder.info(
+                    "⬇️ **Step 2 of 3 — Correct Your Transportation Data**\n\n"
+                    "The uploaded files need to be corrected before the optimization "
+                    "can continue. Review the error below, update the affected CSV, "
+                    "and upload the corrected file."
+                )
+
             st.error(str(error))
 
 if tool == "Scheduling Optimizer":
