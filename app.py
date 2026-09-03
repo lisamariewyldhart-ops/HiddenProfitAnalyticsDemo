@@ -107,6 +107,18 @@ if guided_mode:
         "Guided Mode is on. The app will show the next recommended step as you work."
     )
 
+st.sidebar.divider()
+
+st.sidebar.caption(
+    "Testing Hidden Profit Analytics? Your feedback helps improve the platform."
+)
+
+st.sidebar.link_button(
+    "Give Beta Feedback",
+    "https://forms.gle/Q8Ey4TB6jYM3Yo6a6",
+    use_container_width=True
+)
+
 st.info(
     "Private Beta: Hidden Profit Analytics is currently being tested with a limited group of users. "
     "Please upload only business data you are authorized to use. "
@@ -1976,13 +1988,7 @@ if tool == "Profit Analyzer":
     Profit Analytics is a business decision-support tool and does not replace
     professional accounting, tax, legal, or financial advice.
     """
-        )
-
-        st.link_button(
-            "Give Beta Feedback",
-            "https://forms.gle/Q8Ey4TB6jYM3Yo6a6",
-            use_container_width=True
-        )   
+        )  
 
     # ==========================================
     # STEP 1: BUSINESS INFORMATION
