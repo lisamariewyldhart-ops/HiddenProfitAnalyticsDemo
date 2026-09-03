@@ -1966,7 +1966,17 @@ if tool == "Resource Allocation Optimizer":
             )
 
         except Exception as error:
-            st.error(str(error))            
+            if guided_mode:
+                st.session_state.resource_allocation_guide_step = 2
+
+                resource_allocation_guide_placeholder.info(
+                    "⬇️ **Step 2 of 3 — Correct Your Resource Allocation Data**\n\n"
+                    "The uploaded files need to be corrected before the optimization "
+                    "can continue. Review the error below, update the affected CSV, "
+                    "and upload the corrected file."
+                )
+
+            st.error(str(error))        
 
 if tool == "Profit Analyzer":
     st.title("Hidden Profit Analytics")
