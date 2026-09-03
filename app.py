@@ -350,6 +350,18 @@ if tool == "Assignment Optimizer":
             )
 
         except Exception as error:
+            if guided_mode:
+                st.session_state.assignment_guide_step = 2
+
+                assignment_step1_placeholder.empty()
+
+                assignment_guide_placeholder.info(
+                    "⬇️ **Step 2 of 3 — Correct Your Assignment Data**\n\n"
+                    "The uploaded file needs to be corrected before the optimization "
+                    "can continue. Review the error below, update your CSV, and upload "
+                    "the corrected file."
+                )
+
             st.error(str(error))
 
 if tool == "Set Covering Optimizer":
