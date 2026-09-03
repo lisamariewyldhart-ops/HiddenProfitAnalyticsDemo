@@ -125,6 +125,25 @@ st.info(
     "Results are provided for decision-support purposes and should not be considered accounting, legal, tax, or financial advice."
 )
 
+with st.expander("Beta Tester Quick Start", expanded=False):
+    st.markdown(
+        """
+1. **Choose a tool** that matches the business decision you want to improve.
+
+2. **Use Guided Mode** if you would like step-by-step help while working through the tool.
+
+3. **Download the provided CSV template or templates** for the selected tool.
+
+4. **Replace the sample values with your own business data** and save the completed CSV file or files.
+
+5. **Upload the completed data files.** Hidden Profit Analytics will validate your inputs before running the optimization.
+
+6. **Review the recommendation and results**, including potential savings, profit improvement, assignment changes, or other suggested actions.
+
+7. When you are finished testing, click **Give Beta Feedback** in the sidebar and tell us about your experience.
+        """
+    )
+
 st.caption(
     "Data handling: Uploaded CSV data is used within the active app session to perform the analysis. "
     "Hidden Profit Analytics does not intentionally save uploaded CSV files to the application repository. "
@@ -1901,7 +1920,7 @@ if tool == "Profit Analyzer":
     st.title("Hidden Profit Analytics")
     st.subheader("Business Optimization Dashboard")
 
-    with st.expander("How to Use Hidden Profit Analytics", expanded=False):
+    with st.expander("How to Use the Profit Analyzer", expanded=False):
         st.markdown(
             """
     1. **Enter the business information** and select a target profit margin.
@@ -1910,11 +1929,11 @@ if tool == "Profit Analyzer":
     4. Click **Run Analysis** to identify potential hidden profit opportunities.
     5. **Review the optimization recommendation, scenarios, and sensitivity analysis.**
     6. **Generate and download the Client Report** for a summary of the findings and recommended action plan.
-    7. When you're finished testing, open **Help & FAQs** and click **Give Beta Feedback** to share your experience.
+    7. When you're finished testing, use the **Give Beta Feedback** button in the sidebar to share your experience.
     """
         )
 
-    with st.expander("Help & FAQs", expanded=False):
+    with st.expander("Profit Analyzer Help & FAQs", expanded=False):
 
         st.markdown("### Getting Started")
 
