@@ -354,7 +354,7 @@ if st.session_state.hpa_page == "custom_decision":
         try:
             resend.Emails.send(
                 {
-                    "from": "Hidden Profit Analytics <onboarding@resend.dev>",
+                    "from": "Hidden Profit Analytics <decisions@hiddenprofitanalytics.com>",
                     "to": ["lisamariewyldhart@gmail.com"],
                     "subject": "New Hidden Profit Analytics Decision Submission",
                     "text": (
