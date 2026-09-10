@@ -1,4 +1,8 @@
 import streamlit as st
+import resend
+
+resend.api_key = st.secrets["RESEND_API_KEY"]
+
 import pandas as pd
 
 from assignment_optimizer import run_assignment_optimizer
@@ -21,6 +25,9 @@ from report_generator import (
 )
 if "analysis_ready" not in st.session_state:
     st.session_state.analysis_ready = False
+
+if "hpa_page" not in st.session_state:
+    st.session_state.hpa_page = "home"
 
 if "profit_guide_step" not in st.session_state:
     st.session_state.profit_guide_step = 1
@@ -49,52 +56,18 @@ st.set_page_config(
 )
 
 st.sidebar.title("Hidden Profit Analytics")
-st.sidebar.caption(
-    "Optimization tools for smarter business decisions."
-)
 
-tool = st.sidebar.selectbox(
-    "Choose a tool",
-    [
-        "Profit Analyzer",
-        "Assignment Optimizer",
-        "Set Covering Optimizer",
-        "Facility Location Optimizer",
-        "Transportation Optimizer",
-        "Scheduling Optimizer",
-        "Resource Allocation Optimizer",
-    ]
-)
+tool_page_map = {
+    "profit_analyzer": "Profit Analyzer",
+    "assignment_analyzer": "Assignment Optimizer",
+    "set_covering_analyzer": "Set Covering Optimizer",
+    "facility_analyzer": "Facility Location Optimizer",
+    "transportation_analyzer": "Transportation Optimizer",
+    "scheduling_analyzer": "Scheduling Optimizer",
+    "resource_allocation_analyzer": "Resource Allocation Optimizer",
+}
 
-st.sidebar.caption(
-    "Choose the tool that best matches the business decision you want to improve."
-)
-
-with st.sidebar.expander("Not sure which tool to choose?"):
-    st.markdown(
-        """
-        **Profit Analyzer**  
-        Identify hidden profit opportunities and evaluate ways to improve profit margin.
-
-        **Assignment Optimizer**  
-        Assign employees, teams, or resources to tasks at the lowest total cost.
-
-        **Set Covering Optimizer**  
-        Choose the lowest-cost combination of locations, suppliers, or resources needed to cover all requirements.
-
-        **Facility Location Optimizer**  
-        Decide which facilities to open, keep, or close and which customers each facility should serve.
-
-        **Transportation Optimizer**  
-        Determine how much to ship from each source to each destination at the lowest transportation cost.
-
-        **Scheduling Optimizer**  
-        Build a lower-cost employee schedule while meeting staffing and availability requirements.
-
-        **Resource Allocation Optimizer**  
-        Allocate limited budget and staff hours across initiatives to maximize profit or business value.
-        """
-    )
+tool = tool_page_map.get(st.session_state.hpa_page)
 
 guided_mode = st.sidebar.toggle(
     "Guided Mode",
@@ -149,6 +122,344 @@ st.caption(
     "Hidden Profit Analytics does not intentionally save uploaded CSV files to the application repository. "
     "Generated PDF reports are created temporarily for download."
 )
+
+if st.session_state.hpa_page == "home":
+    st.title("Hidden Profit Analytics")
+
+    st.header("What are you trying to figure out?")
+
+    st.write(
+        "Tell Hidden Profit Analytics about your business challenge, "
+        "and we'll guide you to your optimal decision."
+    )
+
+    st.subheader("💰 I want to improve my profit.")
+
+    if st.button("Explore this option →", key="explore_profit"):
+        st.session_state.hpa_page = "profit_guidance"
+        st.rerun()
+
+    st.subheader("👥 I want to use my people and resources more efficiently.")
+
+    if st.button("Explore this option →", key="explore_people_resources"):
+        st.session_state.hpa_page = "people_resources_guidance"
+        st.rerun()
+
+if st.session_state.hpa_page == "people_resources_guidance":
+    st.header("👥 Let's use your people and resources more efficiently")
+
+    st.subheader("What are you trying to improve?")
+
+    people_resource_need = st.radio(
+        "Choose the option that best describes your situation:",
+        [
+            "I need to decide who or what should be assigned to each job or task",
+            "I need to build a better employee schedule",
+            "I have limited people, time, money, or equipment and need to decide where to use them",
+            "I'm not sure which of these best fits my situation",
+        ],
+        index=None,
+        key="people_resource_need"
+    )
+
+    if st.button(
+        "Continue →",
+        disabled=people_resource_need is None,
+        key="people_resource_need_continue"
+    ):
+        st.session_state.hpa_page = "people_resources_goal"
+        st.rerun()
+
+if st.session_state.hpa_page == "people_resources_goal":
+    st.header("👥 Let's use your people and resources more efficiently")
+
+    st.subheader("What would you like HPA to help you determine?")
+
+    people_resource_goal = st.radio(
+        "Choose the option that best matches what you want to accomplish:",
+        [
+            "Which person, team, or resource should handle each job or task",
+            "How to create a lower-cost employee schedule while meeting staffing needs",
+            "Where to allocate limited people, time, money, or equipment for the greatest value",
+            "I'm not sure — help me determine the best approach",
+        ],
+        index=None,
+        key="people_resource_goal"
+    )
+
+    if st.button(
+        "Continue →",
+        disabled=people_resource_goal is None,
+        key="people_resource_goal_continue"
+    ):
+        if people_resource_goal == "I'm not sure — help me determine the best approach":
+            st.session_state.hpa_page = "people_resources_clarify"
+        else:
+            st.session_state.hpa_page = "people_resources_recommendation"
+
+        st.rerun()
+
+if st.session_state.hpa_page == "people_resources_clarify":
+    st.header("👥 Let's narrow this down")
+
+    st.subheader("Which of these sounds most like the decision you're facing?")
+
+    people_resource_clarify = st.radio(
+        "Choose the option that comes closest:",
+        [
+            "I have several people or resources and need to decide who should handle which work",
+            "I need enough employees working at the right times without spending more than necessary",
+            "I have limited resources and several competing priorities",
+            "None of these quite describe my situation",
+        ],
+        index=None,
+        key="people_resource_clarify"
+    )
+
+    if st.button(
+        "Continue →",
+        disabled=people_resource_clarify is None,
+        key="people_resource_clarify_continue"
+    ):
+        if people_resource_clarify == "I have several people or resources and need to decide who should handle which work":
+            st.session_state.people_resource_goal = "Which person, team, or resource should handle each job or task"
+            st.session_state.hpa_page = "people_resources_recommendation"
+
+        elif people_resource_clarify == "I need enough employees working at the right times without spending more than necessary":
+            st.session_state.people_resource_goal = "How to create a lower-cost employee schedule while meeting staffing needs"
+            st.session_state.hpa_page = "people_resources_recommendation"
+
+        elif people_resource_clarify == "I have limited resources and several competing priorities":
+            st.session_state.people_resource_goal = "Where to allocate limited people, time, money, or equipment for the greatest value"
+            st.session_state.hpa_page = "people_resources_recommendation"
+
+        else:
+            st.session_state.hpa_page = "custom_decision"
+
+        st.rerun()
+
+if st.session_state.hpa_page == "people_resources_recommendation":
+    st.header("💡 Your Decision Guidance")
+
+    if st.session_state.people_resource_goal == "Which person, team, or resource should handle each job or task":
+        st.subheader(
+            "HPA can help you determine the most cost-effective way "
+            "to assign people or resources to jobs and tasks."
+        )
+
+        st.write(
+            "We'll compare the available assignment options and their costs "
+            "to identify which person, team, or resource should handle each job "
+            "while minimizing total assignment cost."
+        )
+
+        st.info(
+            "**Recommended next step:** Analyze your assignment options "
+            "to identify the most efficient allocation."
+        )
+
+    elif st.session_state.people_resource_goal == "How to create a lower-cost employee schedule while meeting staffing needs":
+        st.subheader(
+            "HPA can help you build a lower-cost employee schedule "
+            "while still meeting your staffing needs."
+        )
+
+        st.write(
+            "We'll evaluate staffing requirements, employee availability, "
+            "and scheduling costs to determine a schedule that provides "
+            "the coverage you need at the lowest practical cost."
+        )
+
+        st.info(
+            "**Recommended next step:** Analyze your staffing needs, "
+            "employee availability, and scheduling costs to identify "
+            "a more efficient schedule."
+        )
+
+    elif st.session_state.people_resource_goal == "Where to allocate limited people, time, money, or equipment for the greatest value":
+        st.subheader(
+            "HPA can help you determine where your limited resources "
+            "can create the greatest business value."
+        )
+
+        st.write(
+            "We'll evaluate the opportunities competing for your available "
+            "people, time, budget, or equipment and determine how those resources "
+            "can be allocated to produce the greatest overall value."
+        )
+
+        st.info(
+            "**Recommended next step:** Analyze your available resources, "
+            "constraints, and competing opportunities to identify the strongest allocation."
+        )
+
+if st.session_state.hpa_page == "custom_decision":
+    st.header("💡 Your situation may need a closer look")
+
+    st.write(
+        "Not every business decision fits neatly into one category. "
+        "Tell Hidden Profit Analytics a little more about the decision "
+        "you're trying to make, and we'll help determine the best next step."
+    )
+
+    custom_decision_text = st.text_area(
+        "What are you trying to figure out?",
+        placeholder="Describe the business decision, problem, or situation in your own words.",
+        key="custom_decision_text"
+    )
+
+    custom_email = st.text_input(
+        "Email address *",
+        placeholder="you@example.com",
+        key="custom_email"
+    )
+
+    custom_phone = st.text_input(
+        "Phone number (optional)",
+        placeholder="(555) 123-4567",
+        key="custom_phone"
+    )
+
+    preferred_contact = st.radio(
+        "How would you prefer HPA to follow up?",
+        [
+            "Email",
+            "Text message",
+            "Voice call",
+        ],
+        index=None,
+        key="preferred_contact"
+    )
+
+    contact_consent = st.checkbox(
+        "I agree that Hidden Profit Analytics may contact me about this submission.",
+        key="custom_contact_consent"
+    )
+
+    phone_required = preferred_contact in ["Text message", "Voice call"]
+
+    form_ready = (
+        custom_decision_text.strip()
+        and custom_email.strip()
+        and preferred_contact is not None
+        and (not phone_required or custom_phone.strip())
+        and contact_consent
+    )
+
+    if st.button(
+        "Submit my decision →",
+        disabled=not form_ready,
+        key="custom_decision_continue"
+    ):
+        try:
+            resend.Emails.send(
+                {
+                    "from": "Hidden Profit Analytics <onboarding@resend.dev>",
+                    "to": ["lisamariewyldhart@gmail.com"],
+                    "subject": "New Hidden Profit Analytics Decision Submission",
+                    "text": (
+                        f"Decision submitted:\n\n"
+                        f"{custom_decision_text}\n\n"
+                        f"Email: {custom_email}\n"
+                        f"Phone: {custom_phone if custom_phone.strip() else 'Not provided'}\n"
+                        f"Preferred follow-up: {preferred_contact}\n"
+                        f"Contact consent: Yes"
+                    ),
+                }
+            )
+
+            st.session_state.hpa_page = "custom_decision_confirmation"
+            st.rerun()
+
+        except Exception as e:
+            st.error(
+                "We couldn't submit your decision right now. "
+                "Please try again or contact Hidden Profit Analytics directly."
+            )
+
+if st.session_state.hpa_page == "custom_decision_confirmation":
+    st.header("✅ Thanks — your decision has been submitted")
+
+    st.write(
+        "Hidden Profit Analytics has received your submission. "
+        "We'll review the situation you described and follow up using your preferred contact method."
+    )
+
+if st.session_state.hpa_page == "profit_guidance":
+    st.header("💰 Let's improve your profit")
+
+    st.subheader("What are you most concerned about?")
+
+    profit_concern = st.radio(
+        "Choose the option that best describes your situation:",
+        [
+            "My expenses are too high",
+            "My revenue isn't high enough",
+            "My profit margin is lower than I'd like",
+            "I want to know whether increasing revenue or reducing expenses would help more",
+            "I'm not sure where the problem is",
+        ],
+        index=None,
+        key="profit_concern"
+    )
+
+    if st.button(
+        "Continue →",
+        disabled=profit_concern is None,
+        key="profit_concern_continue"
+    ):
+        st.session_state.hpa_page = "profit_goal"
+        st.rerun()
+
+if st.session_state.hpa_page == "profit_goal":
+    st.header("💰 Let's improve your profit")
+
+    st.subheader("What would you like HPA to help you determine?")
+
+    profit_goal = st.radio(
+        "Choose the option that best matches what you want to accomplish:",
+        [
+            "Where I have the greatest opportunity to improve profit",
+            "How much I would need to increase revenue",
+            "How much I would need to reduce expenses",
+            "What combination of revenue growth and expense reduction would work best",
+            "I'm not sure — help me determine the best approach",
+        ],
+        index=None,
+        key="profit_goal"
+    )
+
+    if st.button(
+        "Continue →",
+        disabled=profit_goal is None,
+        key="profit_goal_continue"
+    ):
+        st.session_state.hpa_page = "profit_recommendation"
+        st.rerun()
+
+if st.session_state.hpa_page == "profit_recommendation":
+    st.header("💡 Your Decision Guidance")
+
+    st.subheader(
+        "HPA can help you identify where your greatest "
+        "profit improvement opportunity may be."
+    )
+
+    st.write(
+        "We'll compare the impact of reducing expenses, increasing revenue, "
+        "or using a combination of both based on your business data. "
+        "Then HPA can help determine which approach provides the strongest "
+        "opportunity for improving your profit."
+    )
+
+    st.info(
+        "**Recommended next step:** Analyze your current revenue and expenses "
+        "to identify your strongest profit improvement opportunity."
+    )
+
+    if st.button("Start My Analysis →", key="start_profit_analysis"):
+        st.session_state.hpa_page = "profit_analyzer"
+        st.rerun()
 
 if tool == "Assignment Optimizer":
     st.header("Assignment Optimizer")
@@ -1978,7 +2289,7 @@ if tool == "Resource Allocation Optimizer":
 
             st.error(str(error))        
 
-if tool == "Profit Analyzer":
+if tool == "Profit Analyzer" and st.session_state.hpa_page == "profit_analyzer":
     st.title("Hidden Profit Analytics")
     st.subheader("Business Optimization Dashboard")
 

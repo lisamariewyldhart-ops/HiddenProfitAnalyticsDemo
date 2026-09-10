@@ -4,3 +4,4 @@ scipy==1.18.0
 matplotlib==3.11.1
 reportlab==5.0.1
 pulp==3.2.2
+resend==2.44.0

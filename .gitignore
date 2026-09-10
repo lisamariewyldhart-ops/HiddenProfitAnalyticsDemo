@@ -17,3 +17,5 @@ profit_opportunity.png
 # macOS files
 .DS_Store
 test_data/
+
+.streamlit/secrets.toml
