@@ -145,6 +145,304 @@ if st.session_state.hpa_page == "home":
         st.session_state.hpa_page = "people_resources_guidance"
         st.rerun()
 
+    st.subheader("📍 I need to decide where something should go.")
+
+    if st.button("Explore this option →", key="explore_location"):
+        st.session_state.hpa_page = "location_guidance"
+        st.rerun()
+
+    st.subheader("🚚 I need to decide how products, supplies, or materials should move.")
+
+    if st.button("Explore this option →", key="explore_transportation"):
+        st.session_state.hpa_page = "transportation_guidance"
+        st.rerun()
+
+if st.session_state.hpa_page == "location_guidance":
+    st.header("📍 Let's figure out where something should go")
+
+    st.subheader("What kind of location decision are you trying to make?")
+
+    location_need = st.radio(
+        "Choose the option that best describes your situation:",
+        [
+            "I need to decide where to open, place, or locate a facility, site, office, store, warehouse, or service location",
+            "I need to decide which locations should serve which customers, areas, or demand points",
+            "I need to decide how many locations I should use and where they should be",
+            "I'm not sure which of these best fits my situation",
+        ],
+        index=None,
+        key="location_need"
+    )
+
+    if st.button(
+        "Continue →",
+        disabled=location_need is None,
+        key="location_need_continue"
+    ):
+        st.session_state.hpa_page = "location_goal"
+        st.rerun()
+
+if st.session_state.hpa_page == "location_goal":
+    st.header("📍 Let's find the best location decision")
+
+    st.subheader("What would you like HPA to help you determine?")
+
+    location_goal = st.radio(
+        "Choose the outcome that would be most useful:",
+        [
+            "Which location would be the best choice",
+            "Which locations should serve which customers, areas, or demand points",
+            "How many locations I should use and which ones they should be",
+            "I'm not sure — help me determine the best approach",
+        ],
+        index=None,
+        key="location_goal"
+    )
+
+    if st.button(
+        "Continue →",
+        disabled=location_goal is None,
+        key="location_goal_continue"
+    ):
+        st.session_state.selected_location_goal = location_goal
+
+        if location_goal == "I'm not sure — help me determine the best approach":
+            st.session_state.hpa_page = "location_clarify"
+        else:
+            st.session_state.hpa_page = "location_recommendation"
+
+        st.rerun()
+
+if st.session_state.hpa_page == "location_recommendation":
+    st.header("💡 Your Location Decision Guidance")
+
+    if st.session_state.selected_location_goal == "Which location would be the best choice":
+        st.write(
+            "HPA can help you compare candidate locations and determine which option "
+            "provides the strongest overall fit based on cost, demand, capacity, "
+            "distance, service needs, and other business constraints."
+        )
+
+        st.info(
+            "**Recommended next step:** Analyze your candidate locations and business "
+            "requirements to identify the strongest location choice."
+        )
+
+    elif st.session_state.selected_location_goal == "Which locations should serve which customers, areas, or demand points":
+        st.write(
+            "HPA can help you determine which locations should serve each customer, "
+            "area, or demand point while balancing transportation cost, service coverage, "
+            "capacity, and other operating constraints."
+        )
+
+        st.info(
+            "**Recommended next step:** Analyze your locations, demand points, costs, "
+            "and capacity limits to determine the most efficient service assignments."
+        )
+
+    elif st.session_state.location_goal == "How many locations I should use and which ones they should be":
+        st.write(
+            "HPA can help you determine how many locations to use and which ones should "
+            "be selected by comparing operating costs, capacity, customer demand, "
+            "service requirements, and the tradeoffs between opening additional locations."
+        )
+
+        st.info(
+            "**Recommended next step:** Analyze your candidate locations, fixed costs, "
+            "capacity, demand, and service requirements to identify the best network of locations."
+        )
+
+    if st.button(
+        "Start Your Analysis →",
+        key="location_start_analysis"
+    ):
+        st.session_state.hpa_page = "facility_analyzer"
+        st.rerun()   
+
+if st.session_state.hpa_page == "location_clarify":
+    st.header("📍 Let's narrow down your location decision")
+
+    st.subheader("Which of these sounds most like your situation?")
+
+    location_clarify = st.radio(
+        "Choose the closest match:",
+        [
+            "I'm choosing among a few possible locations",
+            "I already have locations and need to decide which customers or areas each should serve",
+            "I'm deciding how many locations I should operate and where they should be",
+            "None of these quite describe my situation",
+        ],
+        index=None,
+        key="location_clarify_choice"
+    )
+
+    if st.button(
+        "Continue →",
+        disabled=location_clarify is None,
+        key="location_clarify_continue"
+    ):
+        if location_clarify == "I'm choosing among a few possible locations":
+            st.session_state.selected_location_goal = "Which location would be the best choice"
+            st.session_state.hpa_page = "location_recommendation"
+
+        elif location_clarify == "I already have locations and need to decide which customers or areas each should serve":
+            st.session_state.selected_location_goal = "Which locations should serve which customers, areas, or demand points"
+            st.session_state.hpa_page = "location_recommendation"
+
+        elif location_clarify == "I'm deciding how many locations I should operate and where they should be":
+            st.session_state.selected_location_goal = "How many locations I should use and which ones they should be"
+            st.session_state.hpa_page = "location_recommendation"
+
+        else:
+            st.session_state.hpa_page = "custom_decision"
+
+        st.rerun()
+
+if st.session_state.hpa_page == "transportation_guidance":
+    st.header("🚚 Let's figure out how things should move")
+
+    st.subheader("What kind of movement decision are you trying to make?")
+
+    transportation_need = st.radio(
+        "Choose the option that best describes your situation:",
+        [
+            "I need to decide how products, supplies, or materials should move from one location to another",
+            "I need to decide which source, supplier, warehouse, or facility should serve each destination",
+            "I need to reduce transportation or shipping costs",
+            "I'm not sure which of these best fits my situation",
+        ],
+        index=None,
+        key="transportation_need"
+    )
+
+    if st.button(
+        "Continue →",
+        disabled=transportation_need is None,
+        key="transportation_guidance_continue"
+    ):
+        st.session_state.selected_transportation_need = transportation_need
+        st.session_state.hpa_page = "transportation_goal"
+        st.rerun()
+
+if st.session_state.hpa_page == "transportation_goal":
+    st.header("🚚 What would you like HPA to help you determine?")
+
+    transportation_goal = st.radio(
+        "Choose the result that would be most useful:",
+        [
+            "The lowest-cost way to move products, supplies, or materials",
+            "Which sources, suppliers, warehouses, or facilities should serve each destination",
+            "How much should be moved between each location",
+            "I'm not sure — help me determine the best approach",
+        ],
+        index=None,
+        key="transportation_goal"
+    )
+
+    if st.button(
+        "Continue →",
+        disabled=transportation_goal is None,
+        key="transportation_goal_continue"
+    ):
+        st.session_state.selected_transportation_goal = transportation_goal
+
+        if transportation_goal == "I'm not sure — help me determine the best approach":
+            st.session_state.hpa_page = "transportation_clarify"
+        else:
+            st.session_state.hpa_page = "transportation_recommendation"
+
+        st.rerun()
+
+if st.session_state.hpa_page == "transportation_clarify":
+    st.header("🚚 Let's narrow down your transportation decision")
+
+    st.subheader("Which of these sounds most like your situation?")
+
+    transportation_clarify = st.radio(
+        "Choose the closest match:",
+        [
+            "I know where things start and end, but I need the lowest-cost shipping or movement plan",
+            "I need to decide which source, supplier, warehouse, or facility should serve each destination",
+            "I need to decide how much should move between each location",
+            "None of these quite describe my situation",
+        ],
+        index=None,
+        key="transportation_clarify_choice"
+    )
+
+    if st.button(
+        "Continue →",
+        disabled=transportation_clarify is None,
+        key="transportation_clarify_continue"
+    ):
+        if transportation_clarify == "I know where things start and end, but I need the lowest-cost shipping or movement plan":
+            st.session_state.selected_transportation_goal = "The lowest-cost way to move products, supplies, or materials"
+            st.session_state.hpa_page = "transportation_recommendation"
+
+        elif transportation_clarify == "I need to decide which source, supplier, warehouse, or facility should serve each destination":
+            st.session_state.selected_transportation_goal = "Which sources, suppliers, warehouses, or facilities should serve each destination"
+            st.session_state.hpa_page = "transportation_recommendation"
+
+        elif transportation_clarify == "I need to decide how much should move between each location":
+            st.session_state.selected_transportation_goal = "How much should be moved between each location"
+            st.session_state.hpa_page = "transportation_recommendation"
+
+        else:
+            st.session_state.hpa_page = "custom_decision"
+
+        st.rerun()
+
+if st.session_state.hpa_page == "transportation_recommendation":
+    st.header("🚚 Recommended approach")
+
+    transportation_goal = st.session_state.get("selected_transportation_goal")
+
+    if transportation_goal == "The lowest-cost way to move products, supplies, or materials":
+        st.write(
+            "HPA can help you determine the lowest-cost way to move products, "
+            "supplies, or materials from available sources to required destinations "
+            "while respecting supply, demand, and capacity constraints."
+        )
+
+        st.info(
+            "**Recommended next step:** Analyze your sources, destinations, "
+            "available quantities, demand requirements, and transportation costs "
+            "to identify the most cost-efficient movement plan."
+        )
+
+    elif transportation_goal == "Which sources, suppliers, warehouses, or facilities should serve each destination":
+        st.write(
+            "HPA can help you determine which source, supplier, warehouse, or "
+            "facility should serve each destination while balancing transportation "
+            "costs, available supply, demand, and operating constraints."
+        )
+
+        st.info(
+            "**Recommended next step:** Analyze your possible source-to-destination "
+            "routes, costs, supply limits, and destination requirements to determine "
+            "the most efficient assignments."
+        )
+
+    elif transportation_goal == "How much should be moved between each location":
+        st.write(
+            "HPA can help you determine how much product, material, or supply should "
+            "move between each source and destination to meet requirements as "
+            "efficiently as possible."
+        )
+
+        st.info(
+            "**Recommended next step:** Analyze your available supply, destination "
+            "demand, transportation costs, and route constraints to determine the "
+            "optimal quantities to move."
+        )
+
+    if st.button(
+        "Start Your Analysis →",
+        key="transportation_start_analysis"
+    ):
+        st.session_state.hpa_page = "transportation_analyzer"
+        st.rerun()
+
 if st.session_state.hpa_page == "people_resources_guidance":
     st.header("👥 Let's use your people and resources more efficiently")
 
