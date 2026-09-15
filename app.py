@@ -70,14 +70,50 @@ tool_page_map = {
 tool = tool_page_map.get(st.session_state.hpa_page)
 
 guided_mode = st.sidebar.toggle(
-    "Guided Mode",
+    "Analyzer Guidance",
     value=True,
-    help="Show step-by-step guidance while using Hidden Profit Analytics."
+    help="Show step-by-step guidance while working through the analysis."
 )
 
 if guided_mode:
     st.sidebar.caption(
-        "Guided Mode is on. The app will show the next recommended step as you work."
+        "Analyzer Guidance is on. HPA will show the next recommended step while you complete your analysis."
+    )
+
+st.sidebar.divider()
+
+st.sidebar.markdown("**Private Beta**")
+st.sidebar.caption(
+    "Hidden Profit Analytics is currently being tested with a limited group of users. "
+    "Please upload only business data you are authorized to use. "
+    "Results are provided for decision-support purposes and should not be considered "
+    "accounting, legal, tax, or financial advice."
+)
+
+with st.sidebar.expander("Beta Tester Quick Start", expanded=False):
+    st.markdown(
+        """
+1. **Start with your business decision.** Choose the option on the Home page that best describes what you're trying to figure out.
+
+2. **Answer a few guided questions.** Hidden Profit Analytics will help narrow down your decision and recommend the appropriate analysis.
+
+3. **Review your Decision Guidance.** HPA will explain what it can help you determine and recommend the next step.
+
+4. **Start your analysis.** Follow the guided instructions to prepare and provide the business information needed for the analysis.
+
+5. **Review your recommendation and results.** Look at the suggested actions, potential savings, profit improvement, resource changes, or other decision insights.
+
+6. **Try something that doesn't fit.** If your decision doesn't match one of the available choices, use the custom decision option and tell HPA what you're trying to figure out.
+
+7. **Tell us what you think.** Click **Give Beta Feedback** in the sidebar and let us know where the experience was clear, confusing, useful, or could be improved.
+        """
+    )
+
+with st.sidebar.expander("Data & Privacy", expanded=False):
+    st.caption(
+        "Uploaded CSV data is used within the active app session to perform the analysis. "
+        "Hidden Profit Analytics does not intentionally save uploaded CSV files to the application repository. "
+        "Generated PDF reports are created temporarily for download."
     )
 
 st.sidebar.divider()
@@ -92,37 +128,6 @@ st.sidebar.link_button(
     use_container_width=True
 )
 
-st.info(
-    "Private Beta: Hidden Profit Analytics is currently being tested with a limited group of users. "
-    "Please upload only business data you are authorized to use. "
-    "Results are provided for decision-support purposes and should not be considered accounting, legal, tax, or financial advice."
-)
-
-with st.expander("Beta Tester Quick Start", expanded=False):
-    st.markdown(
-        """
-1. **Choose a tool** that matches the business decision you want to improve.
-
-2. **Use Guided Mode** if you would like step-by-step help while working through the tool.
-
-3. **Download the provided CSV template or templates** for the selected tool.
-
-4. **Replace the sample values with your own business data** and save the completed CSV file or files.
-
-5. **Upload the completed data files.** Hidden Profit Analytics will validate your inputs before running the optimization.
-
-6. **Review the recommendation and results**, including potential savings, profit improvement, assignment changes, or other suggested actions.
-
-7. When you are finished testing, click **Give Beta Feedback** in the sidebar and tell us about your experience.
-        """
-    )
-
-st.caption(
-    "Data handling: Uploaded CSV data is used within the active app session to perform the analysis. "
-    "Hidden Profit Analytics does not intentionally save uploaded CSV files to the application repository. "
-    "Generated PDF reports are created temporarily for download."
-)
-
 if st.session_state.hpa_page == "home":
     st.title("Hidden Profit Analytics")
 
@@ -130,30 +135,50 @@ if st.session_state.hpa_page == "home":
 
     st.write(
         "Tell Hidden Profit Analytics about your business challenge, "
-        "and we'll guide you to your optimal decision."
+        "and we'll help you determine the best next step."
     )
 
     st.subheader("💰 I want to improve my profit.")
 
-    if st.button("Explore this option →", key="explore_profit"):
+    st.caption(
+        "Find opportunities to increase revenue, reduce costs, "
+        "or improve your profit margin."
+    )
+
+    if st.button("Help me with this →", key="explore_profit"):
         st.session_state.hpa_page = "profit_guidance"
         st.rerun()
 
     st.subheader("👥 I want to use my people and resources more efficiently.")
 
-    if st.button("Explore this option →", key="explore_people_resources"):
+    st.caption(
+        "Make better decisions about assignments, staffing, schedules, "
+        "and how to use limited resources."
+    )
+
+    if st.button("Help me with this →", key="explore_people_resources"):
         st.session_state.hpa_page = "people_resources_guidance"
         st.rerun()
 
     st.subheader("📍 I need to decide where something should go.")
 
-    if st.button("Explore this option →", key="explore_location"):
+    st.caption(
+        "Compare locations, service areas, capacity, and operating costs "
+        "to make better location decisions."
+    )
+
+    if st.button("Help me with this →", key="explore_location"):
         st.session_state.hpa_page = "location_guidance"
         st.rerun()
 
     st.subheader("🚚 I need to decide how products, supplies, or materials should move.")
 
-    if st.button("Explore this option →", key="explore_transportation"):
+    st.caption(
+        "Determine how to move goods between locations while balancing "
+        "cost, capacity, and demand."
+    )
+
+    if st.button("Help me with this →", key="explore_transportation"):
         st.session_state.hpa_page = "transportation_guidance"
         st.rerun()
 
@@ -174,13 +199,21 @@ if st.session_state.hpa_page == "location_guidance":
         key="location_need"
     )
 
-    if st.button(
-        "Continue →",
-        disabled=location_need is None,
-        key="location_need_continue"
-    ):
-        st.session_state.hpa_page = "location_goal"
-        st.rerun()
+    back_col, spacer_col, continue_col = st.columns([1, 4, 1])
+
+    with back_col:
+        if st.button("← Back", key="location_guidance_back"):
+            st.session_state.hpa_page = "home"
+            st.rerun()
+
+    with continue_col:
+        if st.button(
+            "Continue →",
+            disabled=location_need is None,
+            key="location_need_continue"
+        ):
+            st.session_state.hpa_page = "location_goal"
+            st.rerun()
 
 if st.session_state.hpa_page == "location_goal":
     st.header("📍 Let's find the best location decision")
@@ -199,19 +232,27 @@ if st.session_state.hpa_page == "location_goal":
         key="location_goal"
     )
 
-    if st.button(
-        "Continue →",
-        disabled=location_goal is None,
-        key="location_goal_continue"
-    ):
-        st.session_state.selected_location_goal = location_goal
+    back_col, spacer_col, continue_col = st.columns([1, 4, 1])
 
-        if location_goal == "I'm not sure — help me determine the best approach":
-            st.session_state.hpa_page = "location_clarify"
-        else:
-            st.session_state.hpa_page = "location_recommendation"
+    with back_col:
+        if st.button("← Back", key="location_goal_back"):
+            st.session_state.hpa_page = "location_guidance"
+            st.rerun()
 
-        st.rerun()
+    with continue_col:
+        if st.button(
+            "Continue →",
+            disabled=location_goal is None,
+            key="location_goal_continue"
+        ):
+            st.session_state.selected_location_goal = location_goal
+
+            if location_goal == "I'm not sure — help me determine the best approach":
+                st.session_state.hpa_page = "location_clarify"
+            else:
+                st.session_state.hpa_page = "location_recommendation"
+
+            st.rerun()
 
 if st.session_state.hpa_page == "location_recommendation":
     st.header("💡 Your Location Decision Guidance")
@@ -240,7 +281,7 @@ if st.session_state.hpa_page == "location_recommendation":
             "and capacity limits to determine the most efficient service assignments."
         )
 
-    elif st.session_state.location_goal == "How many locations I should use and which ones they should be":
+    elif st.session_state.selected_location_goal == "How many locations I should use and which ones they should be":
         st.write(
             "HPA can help you determine how many locations to use and which ones should "
             "be selected by comparing operating costs, capacity, customer demand, "
@@ -252,12 +293,20 @@ if st.session_state.hpa_page == "location_recommendation":
             "capacity, demand, and service requirements to identify the best network of locations."
         )
 
-    if st.button(
-        "Start Your Analysis →",
-        key="location_start_analysis"
-    ):
-        st.session_state.hpa_page = "facility_analyzer"
-        st.rerun()   
+    back_col, spacer_col, start_col = st.columns([1, 3.5, 1.5])
+
+    with back_col:
+        if st.button("← Back", key="location_recommendation_back"):
+            st.session_state.hpa_page = "location_goal"
+            st.rerun()
+
+    with start_col:
+        if st.button(
+            "Start Your Analysis →",
+            key="location_start_analysis"
+        ):
+            st.session_state.hpa_page = "facility_analyzer"
+            st.rerun() 
 
 if st.session_state.hpa_page == "location_clarify":
     st.header("📍 Let's narrow down your location decision")
@@ -276,27 +325,36 @@ if st.session_state.hpa_page == "location_clarify":
         key="location_clarify_choice"
     )
 
-    if st.button(
-        "Continue →",
-        disabled=location_clarify is None,
-        key="location_clarify_continue"
-    ):
-        if location_clarify == "I'm choosing among a few possible locations":
-            st.session_state.selected_location_goal = "Which location would be the best choice"
-            st.session_state.hpa_page = "location_recommendation"
+    back_col, spacer_col, continue_col = st.columns([1, 4, 1])
 
-        elif location_clarify == "I already have locations and need to decide which customers or areas each should serve":
-            st.session_state.selected_location_goal = "Which locations should serve which customers, areas, or demand points"
-            st.session_state.hpa_page = "location_recommendation"
+    with back_col:
+        if st.button("← Back", key="location_clarify_back"):
+            st.session_state.hpa_page = "location_goal"
+            st.rerun()
 
-        elif location_clarify == "I'm deciding how many locations I should operate and where they should be":
-            st.session_state.selected_location_goal = "How many locations I should use and which ones they should be"
-            st.session_state.hpa_page = "location_recommendation"
+    with continue_col:
+        if st.button(
+            "Continue →",
+            disabled=location_clarify is None,
+            key="location_clarify_continue"
+        ):
+            if location_clarify == "I'm choosing among a few possible locations":
+                st.session_state.selected_location_goal = "Which location would be the best choice"
+                st.session_state.hpa_page = "location_recommendation"
 
-        else:
-            st.session_state.hpa_page = "custom_decision"
+            elif location_clarify == "I already have locations and need to decide which customers or areas each should serve":
+                st.session_state.selected_location_goal = "Which locations should serve which customers, areas, or demand points"
+                st.session_state.hpa_page = "location_recommendation"
 
-        st.rerun()
+            elif location_clarify == "I'm deciding how many locations I should operate and where they should be":
+                st.session_state.selected_location_goal = "How many locations I should use and which ones they should be"
+                st.session_state.hpa_page = "location_recommendation"
+
+            else:
+                st.session_state.custom_decision_return_page = "location_clarify"
+                st.session_state.hpa_page = "custom_decision"
+
+            st.rerun()
 
 if st.session_state.hpa_page == "transportation_guidance":
     st.header("🚚 Let's figure out how things should move")
@@ -315,14 +373,22 @@ if st.session_state.hpa_page == "transportation_guidance":
         key="transportation_need"
     )
 
-    if st.button(
-        "Continue →",
-        disabled=transportation_need is None,
-        key="transportation_guidance_continue"
-    ):
-        st.session_state.selected_transportation_need = transportation_need
-        st.session_state.hpa_page = "transportation_goal"
-        st.rerun()
+    back_col, spacer_col, continue_col = st.columns([1, 4, 1])
+
+    with back_col:
+        if st.button("← Back", key="transportation_guidance_back"):
+            st.session_state.hpa_page = "home"
+            st.rerun()
+
+    with continue_col:
+        if st.button(
+            "Continue →",
+            disabled=transportation_need is None,
+            key="transportation_guidance_continue"
+        ):
+            st.session_state.selected_transportation_need = transportation_need
+            st.session_state.hpa_page = "transportation_goal"
+            st.rerun()
 
 if st.session_state.hpa_page == "transportation_goal":
     st.header("🚚 What would you like HPA to help you determine?")
@@ -339,19 +405,27 @@ if st.session_state.hpa_page == "transportation_goal":
         key="transportation_goal"
     )
 
-    if st.button(
-        "Continue →",
-        disabled=transportation_goal is None,
-        key="transportation_goal_continue"
-    ):
-        st.session_state.selected_transportation_goal = transportation_goal
+    back_col, spacer_col, continue_col = st.columns([1, 4, 1])
 
-        if transportation_goal == "I'm not sure — help me determine the best approach":
-            st.session_state.hpa_page = "transportation_clarify"
-        else:
-            st.session_state.hpa_page = "transportation_recommendation"
+    with back_col:
+        if st.button("← Back", key="transportation_goal_back"):
+            st.session_state.hpa_page = "transportation_guidance"
+            st.rerun()
 
-        st.rerun()
+    with continue_col:
+        if st.button(
+            "Continue →",
+            disabled=transportation_goal is None,
+            key="transportation_goal_continue"
+        ):
+            st.session_state.selected_transportation_goal = transportation_goal
+
+            if transportation_goal == "I'm not sure — help me determine the best approach":
+                st.session_state.hpa_page = "transportation_clarify"
+            else:
+                st.session_state.hpa_page = "transportation_recommendation"
+
+            st.rerun()
 
 if st.session_state.hpa_page == "transportation_clarify":
     st.header("🚚 Let's narrow down your transportation decision")
@@ -370,27 +444,36 @@ if st.session_state.hpa_page == "transportation_clarify":
         key="transportation_clarify_choice"
     )
 
-    if st.button(
-        "Continue →",
-        disabled=transportation_clarify is None,
-        key="transportation_clarify_continue"
-    ):
-        if transportation_clarify == "I know where things start and end, but I need the lowest-cost shipping or movement plan":
-            st.session_state.selected_transportation_goal = "The lowest-cost way to move products, supplies, or materials"
-            st.session_state.hpa_page = "transportation_recommendation"
+    back_col, spacer_col, continue_col = st.columns([1, 4, 1])
 
-        elif transportation_clarify == "I need to decide which source, supplier, warehouse, or facility should serve each destination":
-            st.session_state.selected_transportation_goal = "Which sources, suppliers, warehouses, or facilities should serve each destination"
-            st.session_state.hpa_page = "transportation_recommendation"
+    with back_col:
+        if st.button("← Back", key="transportation_clarify_back"):
+            st.session_state.hpa_page = "transportation_goal"
+            st.rerun()
 
-        elif transportation_clarify == "I need to decide how much should move between each location":
-            st.session_state.selected_transportation_goal = "How much should be moved between each location"
-            st.session_state.hpa_page = "transportation_recommendation"
+    with continue_col:
+        if st.button(
+            "Continue →",
+            disabled=transportation_clarify is None,
+            key="transportation_clarify_continue"
+        ):
+            if transportation_clarify == "I know where things start and end, but I need the lowest-cost shipping or movement plan":
+                st.session_state.selected_transportation_goal = "The lowest-cost way to move products, supplies, or materials"
+                st.session_state.hpa_page = "transportation_recommendation"
 
-        else:
-            st.session_state.hpa_page = "custom_decision"
+            elif transportation_clarify == "I need to decide which source, supplier, warehouse, or facility should serve each destination":
+                st.session_state.selected_transportation_goal = "Which sources, suppliers, warehouses, or facilities should serve each destination"
+                st.session_state.hpa_page = "transportation_recommendation"
 
-        st.rerun()
+            elif transportation_clarify == "I need to decide how much should move between each location":
+                st.session_state.selected_transportation_goal = "How much should be moved between each location"
+                st.session_state.hpa_page = "transportation_recommendation"
+
+            else:
+                st.session_state.custom_decision_return_page = "transportation_clarify"
+                st.session_state.hpa_page = "custom_decision"
+
+            st.rerun()     
 
 if st.session_state.hpa_page == "transportation_recommendation":
     st.header("🚚 Recommended approach")
@@ -436,12 +519,20 @@ if st.session_state.hpa_page == "transportation_recommendation":
             "optimal quantities to move."
         )
 
-    if st.button(
-        "Start Your Analysis →",
-        key="transportation_start_analysis"
-    ):
-        st.session_state.hpa_page = "transportation_analyzer"
-        st.rerun()
+    back_col, spacer_col, start_col = st.columns([1, 3.5, 1.5])
+
+    with back_col:
+        if st.button("← Back", key="transportation_recommendation_back"):
+            st.session_state.hpa_page = "transportation_goal"
+            st.rerun()
+
+    with start_col:
+        if st.button(
+            "Start Your Analysis →",
+            key="transportation_start_analysis"
+        ):
+            st.session_state.hpa_page = "transportation_analyzer"
+            st.rerun()
 
 if st.session_state.hpa_page == "people_resources_guidance":
     st.header("👥 Let's use your people and resources more efficiently")
@@ -460,13 +551,21 @@ if st.session_state.hpa_page == "people_resources_guidance":
         key="people_resource_need"
     )
 
-    if st.button(
-        "Continue →",
-        disabled=people_resource_need is None,
-        key="people_resource_need_continue"
-    ):
-        st.session_state.hpa_page = "people_resources_goal"
-        st.rerun()
+    back_col, spacer_col, continue_col = st.columns([1, 4, 1])
+
+    with back_col:
+        if st.button("← Back", key="people_resources_guidance_back"):
+            st.session_state.hpa_page = "home"
+            st.rerun()
+
+    with continue_col:
+        if st.button(
+            "Continue →",
+            disabled=people_resource_need is None,
+            key="people_resource_need_continue"
+        ):
+            st.session_state.hpa_page = "people_resources_goal"
+            st.rerun()
 
 if st.session_state.hpa_page == "people_resources_goal":
     st.header("👥 Let's use your people and resources more efficiently")
@@ -485,17 +584,27 @@ if st.session_state.hpa_page == "people_resources_goal":
         key="people_resource_goal"
     )
 
-    if st.button(
-        "Continue →",
-        disabled=people_resource_goal is None,
-        key="people_resource_goal_continue"
-    ):
-        if people_resource_goal == "I'm not sure — help me determine the best approach":
-            st.session_state.hpa_page = "people_resources_clarify"
-        else:
-            st.session_state.hpa_page = "people_resources_recommendation"
+    back_col, spacer_col, continue_col = st.columns([1, 4, 1])
 
-        st.rerun()
+    with back_col:
+        if st.button("← Back", key="people_resources_goal_back"):
+            st.session_state.hpa_page = "people_resources_guidance"
+            st.rerun()
+
+    with continue_col:
+        if st.button(
+            "Continue →",
+            disabled=people_resource_goal is None,
+            key="people_resource_goal_continue"
+        ):
+            st.session_state.selected_people_resource_goal = people_resource_goal
+
+            if people_resource_goal == "I'm not sure — help me determine the best approach":
+                st.session_state.hpa_page = "people_resources_clarify"
+            else:
+                st.session_state.hpa_page = "people_resources_recommendation"
+
+            st.rerun()
 
 if st.session_state.hpa_page == "people_resources_clarify":
     st.header("👥 Let's narrow this down")
@@ -514,32 +623,41 @@ if st.session_state.hpa_page == "people_resources_clarify":
         key="people_resource_clarify"
     )
 
-    if st.button(
-        "Continue →",
-        disabled=people_resource_clarify is None,
-        key="people_resource_clarify_continue"
-    ):
-        if people_resource_clarify == "I have several people or resources and need to decide who should handle which work":
-            st.session_state.people_resource_goal = "Which person, team, or resource should handle each job or task"
-            st.session_state.hpa_page = "people_resources_recommendation"
+    back_col, spacer_col, continue_col = st.columns([1, 4, 1])
 
-        elif people_resource_clarify == "I need enough employees working at the right times without spending more than necessary":
-            st.session_state.people_resource_goal = "How to create a lower-cost employee schedule while meeting staffing needs"
-            st.session_state.hpa_page = "people_resources_recommendation"
+    with back_col:
+        if st.button("← Back", key="people_resources_clarify_back"):
+            st.session_state.hpa_page = "people_resources_goal"
+            st.rerun()
 
-        elif people_resource_clarify == "I have limited resources and several competing priorities":
-            st.session_state.people_resource_goal = "Where to allocate limited people, time, money, or equipment for the greatest value"
-            st.session_state.hpa_page = "people_resources_recommendation"
+    with continue_col:
+        if st.button(
+            "Continue →",
+            disabled=people_resource_clarify is None,
+            key="people_resource_clarify_continue"
+        ):
+            if people_resource_clarify == "I have several people or resources and need to decide who should handle which work":
+                st.session_state.selected_people_resource_goal = "Which person, team, or resource should handle each job or task"
+                st.session_state.hpa_page = "people_resources_recommendation"
 
-        else:
-            st.session_state.hpa_page = "custom_decision"
+            elif people_resource_clarify == "I need enough employees working at the right times without spending more than necessary":
+                st.session_state.selected_people_resource_goal = "How to create a lower-cost employee schedule while meeting staffing needs"
+                st.session_state.hpa_page = "people_resources_recommendation"
 
-        st.rerun()
+            elif people_resource_clarify == "I have limited resources and several competing priorities":
+                st.session_state.selected_people_resource_goal = "Where to allocate limited people, time, money, or equipment for the greatest value"
+                st.session_state.hpa_page = "people_resources_recommendation"
+
+            else:
+                st.session_state.custom_decision_return_page = "people_resources_clarify"
+                st.session_state.hpa_page = "custom_decision"
+
+            st.rerun()
 
 if st.session_state.hpa_page == "people_resources_recommendation":
     st.header("💡 Your Decision Guidance")
 
-    if st.session_state.people_resource_goal == "Which person, team, or resource should handle each job or task":
+    if st.session_state.selected_people_resource_goal == "Which person, team, or resource should handle each job or task":
         st.subheader(
             "HPA can help you determine the most cost-effective way "
             "to assign people or resources to jobs and tasks."
@@ -556,7 +674,7 @@ if st.session_state.hpa_page == "people_resources_recommendation":
             "to identify the most efficient allocation."
         )
 
-    elif st.session_state.people_resource_goal == "How to create a lower-cost employee schedule while meeting staffing needs":
+    elif st.session_state.selected_people_resource_goal == "How to create a lower-cost employee schedule while meeting staffing needs":
         st.subheader(
             "HPA can help you build a lower-cost employee schedule "
             "while still meeting your staffing needs."
@@ -574,7 +692,7 @@ if st.session_state.hpa_page == "people_resources_recommendation":
             "a more efficient schedule."
         )
 
-    elif st.session_state.people_resource_goal == "Where to allocate limited people, time, money, or equipment for the greatest value":
+    elif st.session_state.selected_people_resource_goal == "Where to allocate limited people, time, money, or equipment for the greatest value":
         st.subheader(
             "HPA can help you determine where your limited resources "
             "can create the greatest business value."
@@ -590,6 +708,29 @@ if st.session_state.hpa_page == "people_resources_recommendation":
             "**Recommended next step:** Analyze your available resources, "
             "constraints, and competing opportunities to identify the strongest allocation."
         )
+
+    back_col, spacer_col, continue_col = st.columns([1, 3.5, 1.5])
+
+    with back_col:
+        if st.button("← Back", key="people_resources_recommendation_back"):
+            st.session_state.hpa_page = "people_resources_goal"
+            st.rerun()
+
+    with continue_col:
+        if st.button(
+            "Start Your Analysis →",
+            key="people_resources_start_analysis"
+        ):
+            if st.session_state.selected_people_resource_goal == "Which person, team, or resource should handle each job or task":
+                st.session_state.hpa_page = "assignment_analyzer"
+
+            elif st.session_state.selected_people_resource_goal == "How to create a lower-cost employee schedule while meeting staffing needs":
+                st.session_state.hpa_page = "scheduling_analyzer"
+
+            elif st.session_state.selected_people_resource_goal == "Where to allocate limited people, time, money, or equipment for the greatest value":
+                st.session_state.hpa_page = "resource_allocation_analyzer"
+
+            st.rerun()  
 
 if st.session_state.hpa_page == "custom_decision":
     st.header("💡 Your situation may need a closer look")
@@ -644,36 +785,48 @@ if st.session_state.hpa_page == "custom_decision":
         and contact_consent
     )
 
-    if st.button(
-        "Submit my decision →",
-        disabled=not form_ready,
-        key="custom_decision_continue"
-    ):
-        try:
-            resend.Emails.send(
-                {
-                    "from": "Hidden Profit Analytics <decisions@hiddenprofitanalytics.com>",
-                    "to": ["lisamariewyldhart@gmail.com"],
-                    "subject": "New Hidden Profit Analytics Decision Submission",
-                    "text": (
-                        f"Decision submitted:\n\n"
-                        f"{custom_decision_text}\n\n"
-                        f"Email: {custom_email}\n"
-                        f"Phone: {custom_phone if custom_phone.strip() else 'Not provided'}\n"
-                        f"Preferred follow-up: {preferred_contact}\n"
-                        f"Contact consent: Yes"
-                    ),
-                }
-            )
+    back_col, spacer_col, submit_col = st.columns([1, 3.5, 1.5])
 
-            st.session_state.hpa_page = "custom_decision_confirmation"
+    with back_col:
+        if st.button("← Back", key="custom_decision_back"):
+            st.session_state.hpa_page = st.session_state.get(
+                "custom_decision_return_page",
+                "home"
+            )
             st.rerun()
 
-        except Exception as e:
-            st.error(
-                "We couldn't submit your decision right now. "
-                "Please try again or contact Hidden Profit Analytics directly."
-            )
+    with submit_col:
+
+        if st.button(
+            "Submit my decision →",
+            disabled=not form_ready,
+            key="custom_decision_continue"
+        ):
+            try:
+                resend.Emails.send(
+                    {
+                        "from": "Hidden Profit Analytics <decisions@hiddenprofitanalytics.com>",
+                        "to": ["lisamariewyldhart@gmail.com"],
+                        "subject": "New Hidden Profit Analytics Decision Submission",
+                        "text": (
+                            f"Decision submitted:\n\n"
+                            f"{custom_decision_text}\n\n"
+                            f"Email: {custom_email}\n"
+                            f"Phone: {custom_phone if custom_phone.strip() else 'Not provided'}\n"
+                            f"Preferred follow-up: {preferred_contact}\n"
+                            f"Contact consent: Yes"
+                        ),
+                    }
+                )
+
+                st.session_state.hpa_page = "custom_decision_confirmation"
+                st.rerun()
+
+            except Exception as e:
+                st.error(
+                    "We couldn't submit your decision right now. "
+                    "Please try again or contact Hidden Profit Analytics directly."
+                )
 
 if st.session_state.hpa_page == "custom_decision_confirmation":
     st.header("✅ Thanks — your decision has been submitted")
@@ -682,6 +835,10 @@ if st.session_state.hpa_page == "custom_decision_confirmation":
         "Hidden Profit Analytics has received your submission. "
         "We'll review the situation you described and follow up using your preferred contact method."
     )
+
+    if st.button("← Return to Hidden Profit Analytics", key="custom_confirmation_home"):
+        st.session_state.hpa_page = "home"
+        st.rerun()
 
 if st.session_state.hpa_page == "profit_guidance":
     st.header("💰 Let's improve your profit")
@@ -701,13 +858,21 @@ if st.session_state.hpa_page == "profit_guidance":
         key="profit_concern"
     )
 
-    if st.button(
-        "Continue →",
-        disabled=profit_concern is None,
-        key="profit_concern_continue"
-    ):
-        st.session_state.hpa_page = "profit_goal"
-        st.rerun()
+    back_col, spacer_col, continue_col = st.columns([1, 4, 1])
+
+    with back_col:
+        if st.button("← Back", key="profit_guidance_back"):
+            st.session_state.hpa_page = "home"
+            st.rerun()
+
+    with continue_col:
+        if st.button(
+            "Continue →",
+            disabled=profit_concern is None,
+            key="profit_concern_continue"
+        ):
+            st.session_state.hpa_page = "profit_goal"
+            st.rerun()
 
 if st.session_state.hpa_page == "profit_goal":
     st.header("💰 Let's improve your profit")
@@ -727,13 +892,70 @@ if st.session_state.hpa_page == "profit_goal":
         key="profit_goal"
     )
 
-    if st.button(
-        "Continue →",
-        disabled=profit_goal is None,
-        key="profit_goal_continue"
-    ):
-        st.session_state.hpa_page = "profit_recommendation"
-        st.rerun()
+    back_col, spacer_col, continue_col = st.columns([1, 4, 1])
+
+    with back_col:
+        if st.button("← Back", key="profit_goal_back"):
+            st.session_state.hpa_page = "profit_guidance"
+            st.rerun()
+
+    with continue_col:
+        if st.button(
+            "Continue →",
+            disabled=profit_goal is None,
+            key="profit_goal_continue"
+        ):
+            if profit_goal == "I'm not sure — help me determine the best approach":
+                st.session_state.hpa_page = "profit_clarify"
+            else:
+                st.session_state.hpa_page = "profit_recommendation"
+
+            st.rerun()
+
+if st.session_state.hpa_page == "profit_clarify":
+    st.header("💰 Let's narrow down your profit decision")
+
+    st.subheader("Which of these sounds most like your situation?")
+
+    profit_clarify = st.radio(
+        "Choose the closest match:",
+        [
+            "I know my expenses are too high but I'm not sure where to focus",
+            "I need more revenue but I'm not sure how much improvement is needed",
+            "I want to improve my profit margin but I'm not sure whether revenue or expenses matter more",
+            "None of these quite describe my situation",
+        ],
+        index=None,
+        key="profit_clarify_choice"
+    )
+
+    back_col, spacer_col, continue_col = st.columns([1, 4, 1])
+
+    with back_col:
+        if st.button("← Back", key="profit_clarify_back"):
+            st.session_state.hpa_page = "profit_goal"
+            st.rerun()
+
+    with continue_col:
+        if st.button(
+            "Continue →",
+            disabled=profit_clarify is None,
+            key="profit_clarify_continue"
+        ):
+            if profit_clarify == "I know my expenses are too high but I'm not sure where to focus":
+                st.session_state.hpa_page = "profit_recommendation"
+
+            elif profit_clarify == "I need more revenue but I'm not sure how much improvement is needed":
+                st.session_state.hpa_page = "profit_recommendation"
+
+            elif profit_clarify == "I want to improve my profit margin but I'm not sure whether revenue or expenses matter more":
+                st.session_state.hpa_page = "profit_recommendation"
+
+            else:
+                st.session_state.custom_decision_return_page = "profit_clarify"
+                st.session_state.hpa_page = "custom_decision"
+
+            st.rerun()
 
 if st.session_state.hpa_page == "profit_recommendation":
     st.header("💡 Your Decision Guidance")
@@ -755,9 +977,20 @@ if st.session_state.hpa_page == "profit_recommendation":
         "to identify your strongest profit improvement opportunity."
     )
 
-    if st.button("Start My Analysis →", key="start_profit_analysis"):
-        st.session_state.hpa_page = "profit_analyzer"
-        st.rerun()
+    back_col, spacer_col, continue_col = st.columns([1, 3.5, 1.5])
+
+    with back_col:
+        if st.button("← Back", key="profit_recommendation_back"):
+            st.session_state.hpa_page = "profit_goal"
+            st.rerun()
+
+    with continue_col:
+        if st.button(
+            "Start Your Analysis →",
+            key="start_profit_analysis"
+        ):
+            st.session_state.hpa_page = "profit_analyzer"
+            st.rerun()
 
 if tool == "Assignment Optimizer":
     st.header("Assignment Optimizer")
