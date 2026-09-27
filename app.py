@@ -1,7 +1,5 @@
 import streamlit as st
-import resend
 
-resend.api_key = st.secrets["RESEND_API_KEY"]
 
 import pandas as pd
 from io import StringIO
@@ -788,109 +786,28 @@ if st.session_state.hpa_page == "custom_decision":
     st.header("💡 Your situation may need a closer look")
 
     st.write(
-        "Not every business decision fits neatly into one category. "
-        "Tell Hidden Profit Analytics a little more about the decision "
-        "you're trying to make, and we'll help determine the best next step."
+        "Not every business decision fits neatly into one of the sample "
+        "categories included in this portfolio demonstration."
     )
 
-    custom_decision_text = st.text_area(
-        "What are you trying to figure out?",
-        placeholder="Describe the business decision, problem, or situation in your own words.",
-        key="custom_decision_text"
+    st.info(
+        "The full Hidden Profit Analytics service can evaluate custom business "
+        "decisions by identifying the relevant alternatives, constraints, costs, "
+        "and tradeoffs and selecting an appropriate decision-support approach."
     )
 
-    custom_email = st.text_input(
-        "Email address *",
-        placeholder="you@example.com",
-        key="custom_email"
+    st.caption(
+        "This public portfolio demo uses fictional scenarios only and does not "
+        "collect or submit visitor information."
     )
 
-    custom_phone = st.text_input(
-        "Phone number (optional)",
-        placeholder="(555) 123-4567",
-        key="custom_phone"
-    )
-
-    preferred_contact = st.radio(
-        "How would you prefer HPA to follow up?",
-        [
-            "Email",
-            "Text message",
-            "Voice call",
-        ],
-        index=None,
-        key="preferred_contact"
-    )
-
-    contact_consent = st.checkbox(
-        "I agree that Hidden Profit Analytics may contact me about this submission.",
-        key="custom_contact_consent"
-    )
-
-    phone_required = preferred_contact in ["Text message", "Voice call"]
-
-    form_ready = (
-        custom_decision_text.strip()
-        and custom_email.strip()
-        and preferred_contact is not None
-        and (not phone_required or custom_phone.strip())
-        and contact_consent
-    )
-
-    back_col, spacer_col, submit_col = st.columns([1, 3.5, 1.5])
-
-    with back_col:
-        if st.button("← Back", key="custom_decision_back"):
-            st.session_state.hpa_page = st.session_state.get(
-                "custom_decision_return_page",
-                "home"
-            )
-            st.rerun()
-
-    with submit_col:
-
-        if st.button(
-            "Submit my decision →",
-            disabled=not form_ready,
-            key="custom_decision_continue"
-        ):
-            try:
-                resend.Emails.send(
-                    {
-                        "from": "Hidden Profit Analytics <decisions@hiddenprofitanalytics.com>",
-                        "to": ["lisamariewyldhart@gmail.com"],
-                        "subject": "New Hidden Profit Analytics Decision Submission",
-                        "text": (
-                            f"Decision submitted:\n\n"
-                            f"{custom_decision_text}\n\n"
-                            f"Email: {custom_email}\n"
-                            f"Phone: {custom_phone if custom_phone.strip() else 'Not provided'}\n"
-                            f"Preferred follow-up: {preferred_contact}\n"
-                            f"Contact consent: Yes"
-                        ),
-                    }
-                )
-
-                st.session_state.hpa_page = "custom_decision_confirmation"
-                st.rerun()
-
-            except Exception as e:
-                st.error(
-                    "We couldn't submit your decision right now. "
-                    "Please try again or contact Hidden Profit Analytics directly."
-                )
-
-if st.session_state.hpa_page == "custom_decision_confirmation":
-    st.header("✅ Thanks — your decision has been submitted")
-
-    st.write(
-        "Hidden Profit Analytics has received your submission. "
-        "We'll review the situation you described and follow up using your preferred contact method."
-    )
-
-    if st.button("← Return to Hidden Profit Analytics", key="custom_confirmation_home"):
-        st.session_state.hpa_page = "home"
+    if st.button("← Back", key="custom_decision_back"):
+        st.session_state.hpa_page = st.session_state.get(
+            "custom_decision_return_page",
+            "home"
+        )
         st.rerun()
+
 
 if st.session_state.hpa_page == "profit_guidance":
     st.header("💰 Let's improve your profit")
