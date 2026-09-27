@@ -2774,268 +2774,82 @@ if tool == "Profit Analyzer" and st.session_state.hpa_page == "profit_analyzer":
         )  
 
     # ==========================================
-    # STEP 1: BUSINESS INFORMATION
+    # PUBLIC DEMO BUSINESS INFORMATION
     # ==========================================
 
-    if (
-        guided_mode
-        and tool == "Profit Analyzer"
-        and st.session_state.profit_guide_step == 1
-    ):
-        st.info(
-            "**Step 1 of 4 — Tell us about your business**\n\n"
-            "Enter your company name and the profit margin you'd like to achieve."
-        )
-
-    with st.container(border=True):
-        st.subheader("Business Information")
-
-        company_name = st.text_input(
-            "Company Name",
-            value="Sample Business",
-            help=(
-                "Enter the business name that should appear "
-                "in the analysis and client report."
-            )
-        )
-
-        target_percent = st.number_input(
-            "Target Profit Margin (%)",
-            min_value=0.0,
-            max_value=100.0,
-            value=22.0,
-            step=1.0,
-            help=(
-                "Enter the profit margin the business would "
-                "like to achieve. The value must be greater "
-                "than 0% and less than 100%."
-            )
-        )
-
-        if (
-            guided_mode
-            and st.session_state.profit_guide_step == 1
-        ):
-            if st.button(
-                "Continue to Financial Data →",
-                use_container_width=True
-            ):
-                st.session_state.profit_guide_step = 2
-                st.rerun()
-
+    company_name = "Sample Business"
+    target_percent = 22.0
     target_margin = target_percent / 100
 
     # ==========================================
-    # STEP 2: FINANCIAL DATA
+    # STEP 2: SAMPLE FINANCIAL DATA
     # ==========================================
 
-    if (
-        guided_mode
-        and st.session_state.profit_guide_step == 2
-    ):
-        st.info(
-            "**Step 2 of 4 — Add your financial data**\n\n"
-            "Download the CSV template if needed, enter your monthly financial data, "
-            "then upload the completed file."
-        )
+    csv_template = (
+        "Month,Revenue,Expenses\n"
+        "January,30000,26000\n"
+        "February,34000,28000\n"
+        "March,38000,30000\n"
+    )
+
+    if "profit_sample_file" not in st.session_state:
+        st.session_state.profit_sample_file = None
 
     with st.container(border=True):
-        st.subheader("Financial Data")
+        st.subheader("Sample Business Scenario")
 
-        csv_template = (
-            "Month,Revenue,Expenses\n"
-            "January,30000,26000\n"
-            "February,34000,28000\n"
-            "March,38000,30000\n"
+        st.write(
+            "This portfolio demonstration uses fictional monthly financial data "
+            "for Sample Business. The business wants to determine a practical "
+            "path toward a 22% target profit margin."
         )
 
         st.caption(
-            "Need a file to get started? Download the CSV template, "
-            "replace the sample values with your monthly financial data, "
-            "save it, and upload it below."
+            "The financial data and improvement assumptions in this scenario "
+            "are fictional and are provided only to demonstrate Hidden Profit "
+            "Analytics."
         )
 
-        st.download_button(
-            label="Download CSV Template",
-            data=csv_template,
-            file_name="Hidden_Profit_Analytics_Template.csv",
-            mime="text/csv",
-            use_container_width=True
-        )
-        uploaded_file = st.file_uploader(
-            "Upload financial data CSV",
-            type=["csv"],
-            help=(
-                "Upload a CSV containing Month, Revenue, and Expenses."
-            )
-        ) 
-
-        if (
-            guided_mode
-            and st.session_state.profit_guide_step == 2
-            and uploaded_file is not None
+        if st.button(
+            "▶ Run Sample Profit Analysis",
+            type="primary",
+            use_container_width=True,
+            key="run_sample_profit_analysis"
         ):
-            st.session_state.profit_guide_step = 3
+            st.session_state.profit_sample_file = StringIO(csv_template)
+            st.session_state.profit_guide_step = 4
+            st.session_state.analysis_ready = False
+            st.session_state.profit_sample_should_run = True
             st.rerun()
 
+    uploaded_file = st.session_state.get("profit_sample_file")
+
     # ==========================================
-    # STEP 3: IMPROVEMENT ASSUMPTIONS
+    # PUBLIC DEMO IMPROVEMENT ASSUMPTIONS
     # ==========================================
 
-    if (
-        guided_mode
-        and st.session_state.profit_guide_step == 3
-    ):
-        st.info(
-            "**Step 3 of 4 — Set realistic improvement assumptions**\n\n"
-            "Estimate what improvements are realistically achievable for this business. "
-            "These assumptions will help HPA determine the most practical path to improved profit."
-        )
+    revenue_improvement_example = 5000.0
+    revenue_implementation_cost = 1500.0
+    expense_savings_example = 2000.0
+    expense_implementation_cost = 200.0
 
-    with st.container(border=True):
-        st.subheader("Improvement Assumptions")
+    revenue_cost = (
+        revenue_implementation_cost
+        / revenue_improvement_example
+    )
 
-        st.caption(
-            "Estimate what improvements are realistically achievable for "
-            "this business. Hidden Profit Analytics will use these "
-            "assumptions to build the optimization model."
-        )
+    expense_cost = (
+        expense_implementation_cost
+        / expense_savings_example
+    )
 
-        # ------------------------------------------
-        # Estimate Improvement Costs
-        # ------------------------------------------
-
-        with st.expander(
-            "Estimate Improvement Costs",
-            expanded=False
-        ):
-
-            revenue_improvement_example = st.number_input(
-                "Expected monthly revenue improvement ($)",
-                min_value=1.0,
-                value=5000.0,
-                step=500.0,
-                help=(
-                    "Estimate the additional monthly revenue that a realistic "
-                    "sales, pricing, marketing, or customer-retention initiative "
-                    "could generate."
-                )
-            )
-
-            revenue_implementation_cost = st.number_input(
-                "Cost to achieve that revenue improvement ($)",
-                min_value=0.0,
-                value=1500.0,
-                step=100.0,
-                help=(
-                    "Estimate the implementation cost, such as marketing, "
-                    "labor, technology, training, or other resources."
-                )
-            )
-
-            expense_savings_example = st.number_input(
-                "Expected monthly expense savings ($)",
-                min_value=1.0,
-                value=2000.0,
-                step=500.0,
-                help=(
-                    "Estimate the monthly savings from a realistic process, "
-                    "purchasing, staffing, technology, or operating improvement."
-                )
-            )
-
-            expense_implementation_cost = st.number_input(
-                "Cost to achieve those expense savings ($)",
-                min_value=0.0,
-                value=200.0,
-                step=100.0,
-                help=(
-                    "Estimate the implementation cost required to achieve "
-                    "the expected monthly expense savings."
-                )
-            )
-
-        # Calculate optimization cost coefficients
-        revenue_cost = (
-            revenue_implementation_cost
-            / revenue_improvement_example
-        )
-
-        expense_cost = (
-            expense_implementation_cost
-            / expense_savings_example
-        )
-
-        # ------------------------------------------
-        # Model Details
-        # ------------------------------------------
-
-        with st.expander(
-            "Model Details",
-            expanded=False
-        ):
-
-            st.caption(
-                f"Calculated optimization costs: "
-                f"\\${revenue_cost:.2f} per \\$1 of additional revenue and "
-                f"\\${expense_cost:.2f} per \\$1 of expense reduction."
-            )
-
-            sensitivity_percent = st.selectbox(
-                "Sensitivity testing range",
-                options=[10, 20, 30],
-                index=1,
-                format_func=lambda x: f"±{x}%",
-                help=(
-                    "Choose how far implementation-cost assumptions should vary "
-                    "above and below the current estimates during sensitivity analysis."
-                )
-            )
-
-        # ------------------------------------------
-        # Set Realistic Limits
-        # ------------------------------------------
-
-        with st.expander(
-            "Set Realistic Limits",
-            expanded=False
-        ):
-
-            max_revenue_increase = st.number_input(
-                "Maximum additional monthly revenue ($)",
-                min_value=0.0,
-                value=3000.0,
-                step=500.0,
-                help=(
-                    "How much additional monthly revenue could realistically "
-                    "be generated by this business?"
-                )
-            )
-
-            max_expense_reduction = st.number_input(
-                "Maximum monthly expense reduction ($)",
-                min_value=0.0,
-                value=2500.0,
-                step=500.0,
-                help=(
-                    "How much could monthly expenses realistically be reduced "
-                    "without harming essential operations?"
-                )
-            )   
-
-            if (
-                guided_mode
-                and st.session_state.profit_guide_step == 3
-            ):
-                if st.button(
-                    "Continue to Analysis →",
-                    use_container_width=True
-                ):
-                    st.session_state.profit_guide_step = 4
-                    st.rerun()
+    sensitivity_percent = 20
+    max_revenue_increase = 3000.0
+    max_expense_reduction = 2500.0
 
     if uploaded_file is not None:
         try:
+            uploaded_file.seek(0)
             data = pd.read_csv(uploaded_file)
         except Exception:
             st.error(
@@ -3049,7 +2863,7 @@ if tool == "Profit Analyzer" and st.session_state.hpa_page == "profit_analyzer":
         if not is_valid:
             st.error(validation_message)
             st.stop()
-        st.markdown("#### Uploaded Data")
+        st.markdown("#### Sample Financial Data")
 
         st.dataframe(
             data,
@@ -3076,21 +2890,17 @@ if tool == "Profit Analyzer" and st.session_state.hpa_page == "profit_analyzer":
             and st.session_state.get("analysis_ready", False)
         ):
             guide_complete_placeholder.success(
-                "✅ **Guided setup complete**\n\n"
-                "Your analysis is ready. Review the recommendations and generate "
-                "the client report when you're ready."
+                "✅ **Sample analysis complete**\n\n"
+                "Review the profit improvement recommendations, scenarios, and "
+                "estimated opportunity below."
             )
 
         run_button_placeholder = st.empty()
 
-        run_analysis_clicked = False
-
-        if not st.session_state.get("analysis_ready", False):
-            run_analysis_clicked = run_button_placeholder.button(
-                "4. Run Analysis",
-                type="primary",
-                use_container_width=True
-            )
+        run_analysis_clicked = st.session_state.pop(
+            "profit_sample_should_run",
+            False
+        )
 
         if run_analysis_clicked:
 
@@ -3604,9 +3414,9 @@ if tool == "Profit Analyzer" and st.session_state.hpa_page == "profit_analyzer":
                 step4_guide_placeholder.empty()
 
                 guide_complete_placeholder.success(
-                    "✅ **Guided setup complete**\n\n"
-                    "Your analysis is ready. Review the recommendations and generate "
-                    "the client report when you're ready."
+                    "✅ **Sample analysis complete**\n\n"
+                    "Review the profit improvement recommendations, scenarios, and "
+                    "estimated opportunity below."
                 )
 
             # ==========================================
@@ -4022,3 +3832,17 @@ if tool == "Profit Analyzer" and st.session_state.hpa_page == "profit_analyzer":
                 )
 
        
+
+    # ==========================================
+    # RETURN TO HPA HOME
+    # ==========================================
+
+    if st.session_state.get("analysis_ready", False):
+        if st.button(
+            "← Ask Another Question",
+            key="profit_ask_another_question"
+        ):
+            st.session_state.hpa_page = "home"
+            st.session_state.analysis_ready = False
+            st.session_state.profit_guide_step = 1
+            st.rerun()
