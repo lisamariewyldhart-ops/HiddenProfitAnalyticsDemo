@@ -1527,10 +1527,10 @@ if tool == "Facility Location Optimizer":
         and st.session_state.facility_guide_step == 1
     ):
         facility_guide_placeholder.info(
-            "⬇️ **Step 1 of 3 — Prepare Your Facility Location Data**\n\n"
-            "Download both CSV templates below. Replace the sample values "
-            "with your facility costs, customer service costs, customer demand, "
-            "and current assignments, then save both completed files."
+            "⬇️ **Step 1 of 3 — Review the Sample Scenario**\n\n"
+            "Review the fictional business scenario below, then run the sample "
+            "analysis to see how Hidden Profit Analytics identifies the lowest-cost "
+            "facility configuration."
         )
 
     facility_location_template = pd.DataFrame(
@@ -1596,87 +1596,48 @@ if tool == "Facility Location Optimizer":
         }
     )
 
-    col1, col2 = st.columns(2)
+    st.subheader("Sample Business Scenario")
 
-    with col1:
-        st.download_button(
-            label="Download Facility Cost Template",
-            data=facility_location_template.to_csv(index=False),
-            file_name="facility_location_template.csv",
-            mime="text/csv"
-        )
-
-    with col2:
-        st.download_button(
-            label="Download Customer Demand Template",
-            data=facility_demand_template.to_csv(index=False),
-            file_name="facility_demand_template.csv",
-            mime="text/csv"
-        )
-
-    with st.expander("How to format your Facility Location data"):
-        st.markdown(
-            """
-            **Facility Cost File**
-
-            - **Facility**: Name of the candidate facility.
-            - **FixedCost**: Fixed cost of operating that facility.
-            - **CurrentOpen**: Enter `1` if the facility is currently open, otherwise `0`.
-            - **Customer columns**: Enter the per-unit service or transportation cost from each facility to each customer.
-
-            **Customer Demand File**
-
-            - **Customer**: Customer, market, region, or demand zone name.
-            - **Demand**: Required demand volume for that customer or zone.
-            - **CurrentFacility**: Facility currently serving that customer.
-
-            Customer names must match the customer column names in the Facility Cost file.
-            Facility names in `CurrentFacility` must match the names in the Facility Cost file.
-            """
-        )
-
-    facility_file = st.file_uploader(
-        "Upload Facility Cost Data CSV",
-        type=["csv"],
-        key="facility_location_upload"
+    st.write(
+        "A business serves four customer areas and is evaluating three possible "
+        "facilities. Each facility has a fixed operating cost and a different "
+        "per-unit cost for serving each customer. Hidden Profit Analytics uses "
+        "mathematical optimization to determine which facilities should operate "
+        "and how customers should be assigned to minimize total cost."
     )
 
-    demand_file = st.file_uploader(
-        "Upload Customer Demand Data CSV",
-        type=["csv"],
-        key="facility_demand_upload"
+    st.caption(
+        "This scenario uses fictional data created for demonstration purposes."
     )
 
-    if (
-        guided_mode
-        and (facility_file is not None or demand_file is not None)
-        and st.session_state.facility_guide_step == 1
+    if st.button(
+        "▶ Run Sample Facility Location Scenario",
+        key="run_sample_facility"
     ):
-        st.session_state.facility_guide_step = 2
-        st.rerun()
+        st.session_state.facility_sample_file = StringIO(
+            facility_location_template.to_csv(index=False)
+        )
+        st.session_state.facility_demand_sample_file = StringIO(
+            facility_demand_template.to_csv(index=False)
+        )
 
-    if (
-        guided_mode
-        and st.session_state.facility_guide_step == 2
-    ):
-        if facility_file is not None and demand_file is not None:
-            facility_guide_placeholder.info(
-                "⬇️ **Step 2 of 3 — Review Your Optimization Results**\n\n"
-                "Both files have been uploaded. Hidden Profit Analytics will validate "
-                "the data and calculate the lowest-cost facility configuration below."
-            )
-        else:
-            facility_guide_placeholder.info(
-                "⬇️ **Step 2 of 3 — Upload Both Data Files**\n\n"
-                "Upload both your completed Facility Cost and Customer Demand CSV files "
-                "to continue."
-            )
+    facility_input = st.session_state.get("facility_sample_file")
+    demand_input = st.session_state.get("facility_demand_sample_file")
 
-    if facility_file is not None and demand_file is not None:
+    if facility_input is None:
+        facility_input = st.session_state.get("facility_sample_file")
+
+    if demand_input is None:
+        demand_input = st.session_state.get("facility_demand_sample_file")
+
+    if facility_input is not None and demand_input is not None:
         try:
+            facility_input.seek(0)
+            demand_input.seek(0)
+
             results = run_facility_location_optimizer(
-                facility_file,
-                demand_file
+                facility_input,
+                demand_input
             )
 
             if guided_mode:
