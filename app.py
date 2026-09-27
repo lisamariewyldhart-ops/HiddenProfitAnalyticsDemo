@@ -4,6 +4,7 @@ import resend
 resend.api_key = st.secrets["RESEND_API_KEY"]
 
 import pandas as pd
+from io import StringIO
 
 from assignment_optimizer import run_assignment_optimizer
 from set_covering_optimizer import run_set_covering_optimizer
@@ -82,30 +83,25 @@ if guided_mode:
 
 st.sidebar.divider()
 
-st.sidebar.markdown("**Private Beta**")
+st.sidebar.markdown("**Portfolio Demonstration**")
 st.sidebar.caption(
-    "Hidden Profit Analytics is currently being tested with a limited group of users. "
-    "Please upload only business data you are authorized to use. "
-    "Results are provided for decision-support purposes and should not be considered "
-    "accounting, legal, tax, or financial advice."
-)
+        "This public portfolio demonstration uses fictional sample business data "
+        "and is designed to showcase the analytical, optimization, and decision-support "
+        "capabilities of Hidden Profit Analytics. No company or customer data is required."
+    )
 
-with st.sidebar.expander("Beta Tester Quick Start", expanded=False):
+with st.sidebar.expander("Explore This Demo", expanded=False):
     st.markdown(
         """
-1. **Start with your business decision.** Choose the option on the Home page that best describes what you're trying to figure out.
+1. **Choose a business challenge** on the Home page.
 
-2. **Answer a few guided questions.** Hidden Profit Analytics will help narrow down your decision and recommend the appropriate analysis.
+2. **Follow the guided questions** to see how HPA translates a business problem into an analytical approach.
 
-3. **Review your Decision Guidance.** HPA will explain what it can help you determine and recommend the next step.
+3. **Explore the recommended analysis** and review the decision-support capabilities.
 
-4. **Start your analysis.** Follow the guided instructions to prepare and provide the business information needed for the analysis.
+4. **Review sample results and recommendations** to see how HPA turns analysis into business guidance.
 
-5. **Review your recommendation and results.** Look at the suggested actions, potential savings, profit improvement, resource changes, or other decision insights.
-
-6. **Try something that doesn't fit.** If your decision doesn't match one of the available choices, use the custom decision option and tell HPA what you're trying to figure out.
-
-7. **Tell us what you think.** Click **Give Beta Feedback** in the sidebar and let us know where the experience was clear, confusing, useful, or could be improved.
+5. **Explore different decisions** to see the platform's profitability and optimization capabilities.
         """
     )
 
@@ -1058,6 +1054,21 @@ if tool == "Assignment Optimizer":
             """
         )
 
+    st.markdown("### Try the Portfolio Sample")
+
+    st.caption(
+        "Run a fictional employee-to-task assignment scenario to see "
+        "how Hidden Profit Analytics identifies a lower-cost allocation."
+    )
+
+    if st.button(
+        "▶ Run Sample Assignment Scenario",
+        key="run_sample_assignment"
+    ):
+        st.session_state.assignment_sample_file = StringIO(
+            assignment_template.to_csv(index=False)
+        )
+
     assignment_file = st.file_uploader(
         "Upload Assignment Data CSV",
         type=["csv"],
@@ -1086,9 +1097,15 @@ if tool == "Assignment Optimizer":
             "potential savings, and assignment changes below."
         )
 
-    if assignment_file is not None:
+    assignment_input = assignment_file
+
+    if assignment_input is None:
+        assignment_input = st.session_state.get("assignment_sample_file")
+
+    if assignment_input is not None:
         try:
-            results = run_assignment_optimizer(assignment_file)
+            assignment_input.seek(0)
+            results = run_assignment_optimizer(assignment_input)
             if guided_mode:
                 st.session_state.assignment_guide_step = 3
 
