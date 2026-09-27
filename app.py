@@ -1247,6 +1247,14 @@ if tool == "Assignment Optimizer":
                 use_container_width=True
             )
 
+            if st.button(
+                "← Ask Another Question",
+                key="assignment_ask_another_question"
+            ):
+                st.session_state.hpa_page = "home"
+                st.session_state.assignment_guide_step = 1
+                st.rerun()
+
         except Exception as error:
             if guided_mode:
                 st.session_state.assignment_guide_step = 2
@@ -1499,15 +1507,22 @@ if tool == "Set Covering Optimizer":
                 use_container_width=True
             )
 
+            if st.button(
+                "← Ask Another Question",
+                key="set_covering_ask_another_question"
+            ):
+                st.session_state.hpa_page = "home"
+                st.session_state.set_covering_guide_step = 1
+                st.rerun()
+
         except Exception as error:
             if guided_mode:
                 st.session_state.set_covering_guide_step = 2
 
                 set_covering_guide_placeholder.info(
-                    "⬇️ **Step 2 of 3 — Correct Your Set Covering Data**\n\n"
-                    "The uploaded file needs to be corrected before the optimization "
-                    "can continue. Review the error below, update your CSV, and upload "
-                    "the corrected file."
+                    "⚠️ **Sample Analysis Could Not Be Completed**\n\n"
+                    "The demonstration encountered an error while running the sample "
+                    "optimization. Technical details are shown below."
                 )
 
             st.error(str(error))
@@ -1782,15 +1797,22 @@ if tool == "Facility Location Optimizer":
                 use_container_width=True
             )
 
+            if st.button(
+                "← Ask Another Question",
+                key="facility_ask_another_question"
+            ):
+                st.session_state.hpa_page = "home"
+                st.session_state.facility_guide_step = 1
+                st.rerun()
+
         except Exception as error:
             if guided_mode:
                 st.session_state.facility_guide_step = 2
 
                 facility_guide_placeholder.info(
-                    "⬇️ **Step 2 of 3 — Correct Your Facility Location Data**\n\n"
-                    "The uploaded files need to be corrected before the optimization "
-                    "can continue. Review the error below, update the affected CSV, "
-                    "and upload the corrected file."
+                    "⚠️ **Sample Analysis Could Not Be Completed**\n\n"
+                    "The demonstration encountered an error while running the sample "
+                    "optimization. Technical details are shown below."
                 )
 
             st.error(str(error))
@@ -1810,10 +1832,10 @@ if tool == "Transportation Optimizer":
         and st.session_state.transportation_guide_step == 1
     ):
         transportation_guide_placeholder.info(
-            "⬇️ **Step 1 of 3 — Prepare Your Transportation Data**\n\n"
-            "Download all four CSV templates below. Replace the sample values "
-            "with your transportation costs, available supply, destination demand, "
-            "and current shipping plan, then save all four completed files."
+            "⬇️ **Step 1 of 3 — Review the Sample Scenario**\n\n"
+            "Review the fictional business scenario below, then run the sample "
+            "analysis to see how Hidden Profit Analytics identifies the lowest-cost "
+            "shipping plan."
         )
 
     transportation_costs_template = pd.DataFrame(
@@ -1894,150 +1916,69 @@ if tool == "Transportation Optimizer":
         }
     )
 
-    row1_col1, row1_col2 = st.columns(2)
 
-    with row1_col1:
-        st.download_button(
-            label="Download Transportation Cost Template",
-            data=transportation_costs_template.to_csv(index=False),
-            file_name="transportation_costs_template.csv",
-            mime="text/csv"
-        )
+    st.subheader("Sample Business Scenario")
 
-    with row1_col2:
-        st.download_button(
-            label="Download Supply Template",
-            data=transportation_supply_template.to_csv(index=False),
-            file_name="transportation_supply_template.csv",
-            mime="text/csv"
-        )
-
-    row2_col1, row2_col2 = st.columns(2)
-
-    with row2_col1:
-        st.download_button(
-            label="Download Demand Template",
-            data=transportation_demand_template.to_csv(index=False),
-            file_name="transportation_demand_template.csv",
-            mime="text/csv"
-        )
-
-    with row2_col2:
-        st.download_button(
-            label="Download Current Shipping Template",
-            data=transportation_current_template.to_csv(index=False),
-            file_name="transportation_current_template.csv",
-            mime="text/csv"
-        )
-
-    with st.expander("How to format your Transportation data"):
-        st.markdown(
-            """
-            **Transportation Cost File**
-
-            - **Source**: Name of the warehouse, plant, supplier, or shipping origin.
-            - **Destination columns**: Enter the per-unit shipping cost from each source to each destination.
-
-            **Supply File**
-
-            - **Source**: Must match the source names in the Transportation Cost file.
-            - **Supply**: Maximum quantity available from each source.
-
-            **Demand File**
-
-            - **Destination**: Must match the destination column names in the Transportation Cost file.
-            - **Demand**: Quantity required at each destination.
-
-            **Current Shipping Plan File**
-
-            - **Source**: Shipping origin.
-            - **Destination**: Shipping destination.
-            - **Quantity**: Current quantity shipped on that route.
-
-            Total available supply must be sufficient to meet total demand.
-            Source and destination names must match across all files.
-            """
-        )
-
-    cost_file = st.file_uploader(
-        "Upload Transportation Cost Data CSV",
-        type=["csv"],
-        key="transportation_cost_upload"
+    st.write(
+        "A business ships products from two warehouses to three customer destinations. "
+        "Each warehouse has limited supply, each destination has required demand, and "
+        "shipping costs vary by route. Hidden Profit Analytics uses mathematical "
+        "optimization to determine how much should be shipped on each route to satisfy "
+        "customer demand at the lowest total transportation cost."
     )
 
-    supply_file = st.file_uploader(
-        "Upload Supply Data CSV",
-        type=["csv"],
-        key="transportation_supply_upload"
+    st.caption(
+        "This scenario uses fictional data created for demonstration purposes."
     )
 
-    demand_file = st.file_uploader(
-        "Upload Demand Data CSV",
-        type=["csv"],
-        key="transportation_demand_upload"
-    )
-
-    current_file = st.file_uploader(
-        "Upload Current Shipping Plan CSV",
-        type=["csv"],
-        key="transportation_current_upload"
-    )
-
-    if (
-        guided_mode
-        and any(
-            file is not None
-            for file in [
-                cost_file,
-                supply_file,
-                demand_file,
-                current_file
-            ]
-        )
-        and st.session_state.transportation_guide_step == 1
+    if st.button(
+        "▶ Run Sample Transportation Scenario",
+        key="run_sample_transportation"
     ):
-        st.session_state.transportation_guide_step = 2
-        st.rerun()
-
-    if (
-        guided_mode
-        and st.session_state.transportation_guide_step == 2
-    ):
-        all_transportation_files_uploaded = all(
-            file is not None
-            for file in [
-                cost_file,
-                supply_file,
-                demand_file,
-                current_file
-            ]
+        st.session_state.transportation_sample_cost_file = StringIO(
+            transportation_costs_template.to_csv(index=False)
+        )
+        st.session_state.transportation_sample_supply_file = StringIO(
+            transportation_supply_template.to_csv(index=False)
+        )
+        st.session_state.transportation_sample_demand_file = StringIO(
+            transportation_demand_template.to_csv(index=False)
+        )
+        st.session_state.transportation_sample_current_file = StringIO(
+            transportation_current_template.to_csv(index=False)
         )
 
-        if all_transportation_files_uploaded:
-            transportation_guide_placeholder.info(
-                "⬇️ **Step 2 of 3 — Review Your Optimization Results**\n\n"
-                "All four files have been uploaded. Hidden Profit Analytics will "
-                "validate the data and calculate the lowest-cost shipping plan below."
-            )
-        else:
-            transportation_guide_placeholder.info(
-                "⬇️ **Step 2 of 3 — Upload All Four Data Files**\n\n"
-                "Upload your completed Transportation Cost, Supply, Demand, "
-                "and Current Shipping Plan CSV files to continue."
-            )
+
+    transportation_cost_input = st.session_state.get(
+        "transportation_sample_cost_file"
+    )
+    transportation_supply_input = st.session_state.get(
+        "transportation_sample_supply_file"
+    )
+    transportation_demand_input = st.session_state.get(
+        "transportation_sample_demand_file"
+    )
+    transportation_current_input = st.session_state.get(
+        "transportation_sample_current_file"
+    )
 
     if (
-        cost_file is not None
-        and supply_file is not None
-        and demand_file is not None
-        and current_file is not None
+        transportation_cost_input is not None
+        and transportation_supply_input is not None
+        and transportation_demand_input is not None
+        and transportation_current_input is not None
     ):
         try:
+            transportation_cost_input.seek(0)
+            transportation_supply_input.seek(0)
+            transportation_demand_input.seek(0)
+            transportation_current_input.seek(0)
+
             results = run_transportation_optimizer(
-                cost_file,
-                supply_file,
-                demand_file,
-                current_file
+                transportation_cost_input,
+                transportation_supply_input,
+                transportation_demand_input,
+                transportation_current_input
             )
 
             if guided_mode:
@@ -2130,15 +2071,22 @@ if tool == "Transportation Optimizer":
                 use_container_width=True
             )
 
+            if st.button(
+                "← Ask Another Question",
+                key="transportation_ask_another_question"
+            ):
+                st.session_state.hpa_page = "home"
+                st.session_state.transportation_guide_step = 1
+                st.rerun()
+
         except Exception as error:
             if guided_mode:
                 st.session_state.transportation_guide_step = 2
 
                 transportation_guide_placeholder.info(
-                    "⬇️ **Step 2 of 3 — Correct Your Transportation Data**\n\n"
-                    "The uploaded files need to be corrected before the optimization "
-                    "can continue. Review the error below, update the affected CSV, "
-                    "and upload the corrected file."
+                    "⚠️ **Sample Analysis Could Not Be Completed**\n\n"
+                    "The demonstration encountered an error while running the sample "
+                    "optimization. Technical details are shown below."
                 )
 
             st.error(str(error))
@@ -2158,10 +2106,10 @@ if tool == "Scheduling Optimizer":
         and st.session_state.scheduling_guide_step == 1
     ):
         scheduling_guide_placeholder.info(
-            "⬇️ **Step 1 of 3 — Prepare Your Scheduling Data**\n\n"
-            "Download all four CSV templates below. Replace the sample values "
-            "with your employee scheduling costs, staffing requirements, "
-            "availability, and current schedule, then save all four completed files."
+            "⬇️ **Step 1 of 3 — Review the Sample Scenario**\n\n"
+            "Review the fictional business scenario below, then run the sample "
+            "analysis to see how Hidden Profit Analytics identifies the lowest-cost "
+            "employee schedule."
         )
 
     scheduling_costs_template = pd.DataFrame(
@@ -2254,148 +2202,79 @@ if tool == "Scheduling Optimizer":
         }
     )
 
-    row1_col1, row1_col2 = st.columns(2)
+    st.subheader("Sample Business Scenario")
 
-    with row1_col1:
-        st.download_button(
-            label="Download Scheduling Cost Template",
-            data=scheduling_costs_template.to_csv(index=False),
-            file_name="scheduling_costs_template.csv",
-            mime="text/csv"
-        )
-
-    with row1_col2:
-        st.download_button(
-            label="Download Staffing Requirements Template",
-            data=scheduling_requirements_template.to_csv(index=False),
-            file_name="scheduling_requirements_template.csv",
-            mime="text/csv"
-        )
-
-    row2_col1, row2_col2 = st.columns(2)
-
-    with row2_col1:
-        st.download_button(
-            label="Download Availability Template",
-            data=scheduling_availability_template.to_csv(index=False),
-            file_name="scheduling_availability_template.csv",
-            mime="text/csv"
-        )
-
-    with row2_col2:
-        st.download_button(
-            label="Download Current Schedule Template",
-            data=scheduling_current_template.to_csv(index=False),
-            file_name="scheduling_current_template.csv",
-            mime="text/csv"
-        )
-
-    with st.expander("How to format your Scheduling data"):
-        st.markdown(
-            """
-            **Scheduling Cost File**
-
-            - **Employee**: Name of the employee or resource.
-            - **Shift columns**: Enter the labor cost of assigning that employee to each shift.
-
-            **Staffing Requirements File**
-
-            - **Shift**: Must match the shift column names in the Scheduling Cost file.
-            - **RequiredEmployees**: Minimum number of employees needed for that shift.
-
-            **Availability File**
-
-            - **Employee**: Must match the employee names in the Scheduling Cost file.
-            - **Shift columns**: Enter `1` if the employee is available for that shift and `0` if unavailable.
-
-            **Current Schedule File**
-
-            - **Employee**: Employee name.
-            - **Shift**: Shift currently assigned to that employee.
-
-            Employee and shift names must match across all files.
-            """
-        )
-
-    cost_file = st.file_uploader(
-        "Upload Scheduling Cost Data CSV",
-        type=["csv"],
-        key="scheduling_cost_upload"
+    st.write(
+        "A business needs to schedule four employees across three shifts while "
+        "meeting staffing requirements, respecting employee availability, and "
+        "controlling labor costs. Hidden Profit Analytics uses mathematical "
+        "optimization to determine the lowest-cost employee schedule that satisfies "
+        "the required staffing levels."
     )
 
-    requirements_file = st.file_uploader(
-        "Upload Staffing Requirements CSV",
-        type=["csv"],
-        key="scheduling_requirements_upload"
+    st.caption(
+        "This scenario uses fictional data created for demonstration purposes."
     )
 
-    availability_file = st.file_uploader(
-        "Upload Employee Availability CSV",
-        type=["csv"],
-        key="scheduling_availability_upload"
-    )
-
-    current_file = st.file_uploader(
-        "Upload Current Schedule CSV",
-        type=["csv"],
-        key="scheduling_current_upload"
-    )
-
-    if (
-        guided_mode
-        and any(
-            file is not None
-            for file in [
-                cost_file,
-                requirements_file,
-                availability_file,
-                current_file
-            ]
-        )
-        and st.session_state.scheduling_guide_step == 1
+    if st.button(
+        "▶ Run Sample Scheduling Scenario",
+        key="run_sample_scheduling"
     ):
-        st.session_state.scheduling_guide_step = 2
-        st.rerun()
-
-    if (
-        guided_mode
-        and st.session_state.scheduling_guide_step == 2
-    ):
-        all_scheduling_files_uploaded = all(
-            file is not None
-            for file in [
-                cost_file,
-                requirements_file,
-                availability_file,
-                current_file
-            ]
+        st.session_state.scheduling_sample_cost_file = StringIO(
+            scheduling_costs_template.to_csv(index=False)
+        )
+        st.session_state.scheduling_sample_requirements_file = StringIO(
+            scheduling_requirements_template.to_csv(index=False)
+        )
+        st.session_state.scheduling_sample_availability_file = StringIO(
+            scheduling_availability_template.to_csv(index=False)
+        )
+        st.session_state.scheduling_sample_current_file = StringIO(
+            scheduling_current_template.to_csv(index=False)
         )
 
-        if all_scheduling_files_uploaded:
-            scheduling_guide_placeholder.info(
-                "⬇️ **Step 2 of 3 — Review Your Optimization Results**\n\n"
-                "All four files have been uploaded. Hidden Profit Analytics will "
-                "validate the data and calculate the lowest-cost employee schedule below."
-            )
-        else:
-            scheduling_guide_placeholder.info(
-                "⬇️ **Step 2 of 3 — Upload All Four Data Files**\n\n"
-                "Upload your completed Scheduling Cost, Staffing Requirements, "
-                "Availability, and Current Schedule CSV files to continue."
-            )
+    scheduling_cost_input = st.session_state.get("scheduling_sample_cost_file")
+    scheduling_requirements_input = st.session_state.get("scheduling_sample_requirements_file")
+    scheduling_availability_input = st.session_state.get("scheduling_sample_availability_file")
+    scheduling_current_input = st.session_state.get("scheduling_sample_current_file")
+
+    if scheduling_cost_input is None:
+        scheduling_cost_input = st.session_state.get(
+            "scheduling_sample_cost_file"
+        )
+
+    if scheduling_requirements_input is None:
+        scheduling_requirements_input = st.session_state.get(
+            "scheduling_sample_requirements_file"
+        )
+
+    if scheduling_availability_input is None:
+        scheduling_availability_input = st.session_state.get(
+            "scheduling_sample_availability_file"
+        )
+
+    if scheduling_current_input is None:
+        scheduling_current_input = st.session_state.get(
+            "scheduling_sample_current_file"
+        )
 
     if (
-        cost_file is not None
-        and requirements_file is not None
-        and availability_file is not None
-        and current_file is not None
+        scheduling_cost_input is not None
+        and scheduling_requirements_input is not None
+        and scheduling_availability_input is not None
+        and scheduling_current_input is not None
     ):
         try:
+            scheduling_cost_input.seek(0)
+            scheduling_requirements_input.seek(0)
+            scheduling_availability_input.seek(0)
+            scheduling_current_input.seek(0)
+
             results = run_scheduling_optimizer(
-                cost_file,
-                requirements_file,
-                availability_file,
-                current_file
+                scheduling_cost_input,
+                scheduling_requirements_input,
+                scheduling_availability_input,
+                scheduling_current_input
             )
 
             if guided_mode:
@@ -2505,15 +2384,22 @@ if tool == "Scheduling Optimizer":
                 use_container_width=True
             )
 
+            if st.button(
+                "← Ask Another Question",
+                key="scheduling_ask_another_question"
+            ):
+                st.session_state.hpa_page = "home"
+                st.session_state.scheduling_guide_step = 1
+                st.rerun()
+
         except Exception as error:
             if guided_mode:
                 st.session_state.scheduling_guide_step = 2
 
                 scheduling_guide_placeholder.info(
-                    "⬇️ **Step 2 of 3 — Correct Your Scheduling Data**\n\n"
-                    "The uploaded files need to be corrected before the optimization "
-                    "can continue. Review the error below, update the affected CSV, "
-                    "and upload the corrected file."
+                    "⚠️ **Sample Analysis Could Not Be Completed**\n\n"
+                    "The demonstration encountered an error while running the sample "
+                    "optimization. Technical details are shown below."
                 )
 
             st.error(str(error))
@@ -2533,10 +2419,10 @@ if tool == "Resource Allocation Optimizer":
         and st.session_state.resource_allocation_guide_step == 1
     ):
         resource_allocation_guide_placeholder.info(
-            "⬇️ **Step 1 of 3 — Prepare Your Resource Allocation Data**\n\n"
-            "Download both CSV templates below. Replace the sample values "
-            "with your initiatives, expected value, resource requirements, "
-            "current allocation, and available resource limits, then save both files."
+            "⬇️ **Step 1 of 3 — Review the Sample Scenario**\n\n"
+            "Review the fictional business scenario below, then run the sample "
+            "analysis to see how Hidden Profit Analytics identifies the highest-value "
+            "allocation of limited business resources."
         )
 
     resource_allocation_template = pd.DataFrame(
@@ -2593,99 +2479,49 @@ if tool == "Resource Allocation Optimizer":
         }
     )
 
-    col1, col2 = st.columns(2)
+    st.subheader("Sample Business Scenario")
 
-    with col1:
-        st.download_button(
-            label="Download Resource Allocation Template",
-            data=resource_allocation_template.to_csv(index=False),
-            file_name="resource_allocation_template.csv",
-            mime="text/csv"
-        )
-
-    with col2:
-        st.download_button(
-            label="Download Resource Limits Template",
-            data=resource_limits_template.to_csv(index=False),
-            file_name="resource_limits_template.csv",
-            mime="text/csv"
-        )
-
-    with st.expander("How to format your Resource Allocation data"):
-        st.markdown(
-            """
-            **Resource Allocation File**
-
-            - **Initiative**: Name of the project, program, product, campaign, or activity competing for resources.
-            - **ProfitPerUnit**: Estimated profit or value generated by one unit of that initiative.
-            - **BudgetPerUnit**: Budget required for one unit.
-            - **HoursPerUnit**: Staff hours required for one unit.
-            - **MaxUnits**: Maximum number of units that can be funded or completed.
-            - **CurrentUnits**: Number of units currently being funded or completed.
-
-            **Resource Limits File**
-
-            - **Resource**: Name of the constrained resource.
-            - **Limit**: Total amount available.
-
-            For this version, the required resource names are `Budget` and `StaffHours`.
-            The current allocation must stay within the available resource limits.
-            """
-        )
-
-    allocation_file = st.file_uploader(
-        "Upload Resource Allocation Data CSV",
-        type=["csv"],
-        key="resource_allocation_upload"
+    st.write(
+        "A business has a limited budget and a limited number of staff hours "
+        "to allocate across four competing initiatives. Each initiative produces "
+        "a different expected value while consuming different amounts of budget "
+        "and staff time. Hidden Profit Analytics uses mathematical optimization "
+        "to determine how resources should be allocated to maximize total business value."
     )
 
-    limits_file = st.file_uploader(
-        "Upload Resource Limits CSV",
-        type=["csv"],
-        key="resource_limits_upload"
+    st.caption(
+        "This scenario uses fictional data created for demonstration purposes."
+    )
+
+    if st.button(
+        "▶ Run Sample Resource Allocation Scenario",
+        key="run_sample_resource_allocation"
+    ):
+        st.session_state.resource_allocation_sample_file = StringIO(
+            resource_allocation_template.to_csv(index=False)
+        )
+        st.session_state.resource_limits_sample_file = StringIO(
+            resource_limits_template.to_csv(index=False)
+        )
+
+    resource_allocation_input = st.session_state.get(
+        "resource_allocation_sample_file"
+    )
+    resource_limits_input = st.session_state.get(
+        "resource_limits_sample_file"
     )
 
     if (
-        guided_mode
-        and (
-            allocation_file is not None
-            or limits_file is not None
-        )
-        and st.session_state.resource_allocation_guide_step == 1
-    ):
-        st.session_state.resource_allocation_guide_step = 2
-        st.rerun()
-
-    if (
-        guided_mode
-        and st.session_state.resource_allocation_guide_step == 2
-    ):
-        all_resource_files_uploaded = (
-            allocation_file is not None
-            and limits_file is not None
-        )
-
-        if all_resource_files_uploaded:
-            resource_allocation_guide_placeholder.info(
-                "⬇️ **Step 2 of 3 — Review Your Optimization Results**\n\n"
-                "Both files have been uploaded. Hidden Profit Analytics will "
-                "validate the data and calculate the optimal resource allocation below."
-            )
-        else:
-            resource_allocation_guide_placeholder.info(
-                "⬇️ **Step 2 of 3 — Upload Both Data Files**\n\n"
-                "Upload your completed Resource Allocation and Resource Limits "
-                "CSV files to continue."
-            )
-
-    if (
-        allocation_file is not None
-        and limits_file is not None
+        resource_allocation_input is not None
+        and resource_limits_input is not None
     ):
         try:
+            resource_allocation_input.seek(0)
+            resource_limits_input.seek(0)
+
             results = run_resource_allocation_optimizer(
-                allocation_file,
-                limits_file
+                resource_allocation_input,
+                resource_limits_input
             )
 
             if guided_mode:
@@ -2820,15 +2656,22 @@ if tool == "Resource Allocation Optimizer":
                 use_container_width=True
             )
 
+            if st.button(
+                "← Ask Another Question",
+                key="resource_allocation_ask_another_question"
+            ):
+                st.session_state.hpa_page = "home"
+                st.session_state.resource_allocation_guide_step = 1
+                st.rerun()
+
         except Exception as error:
             if guided_mode:
                 st.session_state.resource_allocation_guide_step = 2
 
                 resource_allocation_guide_placeholder.info(
-                    "⬇️ **Step 2 of 3 — Correct Your Resource Allocation Data**\n\n"
-                    "The uploaded files need to be corrected before the optimization "
-                    "can continue. Review the error below, update the affected CSV, "
-                    "and upload the corrected file."
+                    "⚠️ **Sample Analysis Could Not Be Completed**\n\n"
+                    "The demonstration encountered an error while running the sample "
+                    "optimization. Technical details are shown below."
                 )
 
             st.error(str(error))        
