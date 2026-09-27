@@ -114,15 +114,28 @@ with st.sidebar.expander("Data & Privacy", expanded=False):
 
 st.sidebar.divider()
 
-st.sidebar.caption(
-    "Testing Hidden Profit Analytics? Your feedback helps improve the platform."
-)
+with st.sidebar.expander("About This Project", expanded=False):
+    st.markdown(
+        """
+**Hidden Profit Analytics** is a prescriptive analytics and business
+decision-support platform designed and developed by **Lisa Marie Wyldhart**.
 
-st.sidebar.link_button(
-    "Give Beta Feedback",
-    "https://forms.gle/Q8Ey4TB6jYM3Yo6a6",
-    use_container_width=True
-)
+**Demonstrated skills:**
+- Python application development
+- Streamlit interface design
+- Pandas data analysis
+- PuLP mathematical optimization
+- Linear programming
+- Prescriptive analytics
+- Business decision modeling
+- Scenario and cost analysis
+- Git/GitHub version control
+
+The platform translates business problems into structured analytical
+models and converts optimization results into actionable business
+recommendations.
+        """
+    )
 
 if st.session_state.hpa_page == "home":
     st.title("Hidden Profit Analytics")
@@ -177,6 +190,49 @@ if st.session_state.hpa_page == "home":
     if st.button("Help me with this →", key="explore_transportation"):
         st.session_state.hpa_page = "transportation_guidance"
         st.rerun()
+
+    st.divider()
+
+    st.header("Explore HPA's Analytical Capabilities")
+
+    st.write(
+        "Want to explore a specific analytical model? Select a capability below "
+        "to see how Hidden Profit Analytics applies prescriptive analytics to "
+        "different types of business decisions."
+    )
+
+    capability_col1, capability_col2 = st.columns(2)
+
+    with capability_col1:
+        if st.button("💰 Profit Analysis", key="direct_profit"):
+            st.session_state.hpa_page = "profit_analyzer"
+            st.rerun()
+
+        if st.button("👥 Assignment Optimization", key="direct_assignment"):
+            st.session_state.hpa_page = "assignment_analyzer"
+            st.rerun()
+
+        if st.button("📍 Set Covering Optimization", key="direct_set_covering"):
+            st.session_state.hpa_page = "set_covering_analyzer"
+            st.rerun()
+
+        if st.button("🏢 Facility Location Optimization", key="direct_facility"):
+            st.session_state.hpa_page = "facility_analyzer"
+            st.rerun()
+
+    with capability_col2:
+        if st.button("🚚 Transportation Optimization", key="direct_transportation"):
+            st.session_state.hpa_page = "transportation_analyzer"
+            st.rerun()
+
+        if st.button("📅 Scheduling Optimization", key="direct_scheduling"):
+            st.session_state.hpa_page = "scheduling_analyzer"
+            st.rerun()
+
+        if st.button("📊 Resource Allocation Optimization", key="direct_resource"):
+            st.session_state.hpa_page = "resource_allocation_analyzer"
+            st.rerun()
+
 
 if st.session_state.hpa_page == "location_guidance":
     st.header("📍 Let's figure out where something should go")
@@ -1004,9 +1060,9 @@ if tool == "Assignment Optimizer":
         and st.session_state.assignment_guide_step == 1
     ):
         assignment_step1_placeholder.info(
-            "⬇️ **Step 1 of 3 — Prepare Your Assignment Data**\n\n"
-            "Download the CSV template below, replace the sample data "
-            "with your own assignments and costs, then save the completed file."
+            "⬇️ **Step 1 of 3 — Review the Sample Scenario**\n\n"
+            "Review the fictional business scenario below, then run the sample analysis "
+            "to see how Hidden Profit Analytics identifies a lower-cost assignment."
         )
 
     assignment_template = pd.DataFrame(
@@ -1034,31 +1090,18 @@ if tool == "Assignment Optimizer":
     }
 )
 
-    st.download_button(
-        label="Download Assignment CSV Template",
-        data=assignment_template.to_csv(index=False),
-        file_name="assignment_template.csv",
-        mime="text/csv"
+    st.subheader("Sample Business Scenario")
+
+    st.write(
+        "A small business needs to assign Alice, Bob, and Carla to three tasks. "
+        "Each employee has a different estimated cost for completing each task. "
+        "Hidden Profit Analytics uses mathematical optimization to determine the "
+        "lowest-cost one-to-one assignment and compare it with the company's "
+        "current allocation."
     )
 
-    with st.expander("How to format your Assignment data"):
-        st.markdown(
-            """
-            - **Employee**: Name of the employee, team, machine, or resource.
-            - **Task**: Name of the task, job, project, or customer.
-            - **Cost**: Cost of assigning that resource to that task.
-            - **CurrentAssignment**: Enter `1` if this is the current assignment, otherwise `0`.
-
-            Each employee-task combination should appear once.
-            Every task must have exactly one current assignment.
-            """
-        )
-
-    st.markdown("### Try the Portfolio Sample")
-
     st.caption(
-        "Run a fictional employee-to-task assignment scenario to see "
-        "how Hidden Profit Analytics identifies a lower-cost allocation."
+        "This scenario uses fictional data created for demonstration purposes."
     )
 
     if st.button(
@@ -1069,11 +1112,7 @@ if tool == "Assignment Optimizer":
             assignment_template.to_csv(index=False)
         )
 
-    assignment_file = st.file_uploader(
-        "Upload Assignment Data CSV",
-        type=["csv"],
-        key="assignment_upload"
-    )
+    assignment_file = None
 
     assignment_guide_placeholder = st.empty()
 
@@ -1082,9 +1121,9 @@ if tool == "Assignment Optimizer":
         and st.session_state.assignment_guide_step == 2
     ):
         assignment_guide_placeholder.info(
-            "⬇️ **Step 2 of 3 — Review Your Optimization Results**\n\n"
-            "Your file has been uploaded. Hidden Profit Analytics will "
-            "validate the data and calculate the lowest-cost assignment below."
+            "⬇️ **Step 2 of 3 — Run the Optimization**\n\n"
+            "Hidden Profit Analytics will evaluate the fictional assignment costs "
+            "and calculate the lowest-cost one-to-one assignment."
         )
 
     elif (
@@ -1215,10 +1254,9 @@ if tool == "Assignment Optimizer":
                 assignment_step1_placeholder.empty()
 
                 assignment_guide_placeholder.info(
-                    "⬇️ **Step 2 of 3 — Correct Your Assignment Data**\n\n"
-                    "The uploaded file needs to be corrected before the optimization "
-                    "can continue. Review the error below, update your CSV, and upload "
-                    "the corrected file."
+                    "⚠️ **Sample Analysis Could Not Be Completed**\n\n"
+                    "The demonstration encountered an error while running the sample "
+                    "optimization. Technical details are shown below."
                 )
 
             st.error(str(error))
@@ -1238,9 +1276,9 @@ if tool == "Set Covering Optimizer":
         and st.session_state.set_covering_guide_step == 1
     ):
         set_covering_step1_placeholder.info(
-            "⬇️ **Step 1 of 3 — Prepare Your Coverage Data**\n\n"
-            "Download the CSV template below, replace the sample options, costs, "
-            "and coverage values with your own data, then save the completed file."
+            "⬇️ **Step 1 of 3 — Review the Sample Scenario**\n\n"
+            "Review the fictional business scenario below, then run the sample analysis "
+            "to see how Hidden Profit Analytics identifies the lowest-cost coverage plan."
         )
 
     set_covering_template = pd.DataFrame(
@@ -1296,39 +1334,29 @@ if tool == "Set Covering Optimizer":
         }
     )
 
-    st.download_button(
-        label="Download Set Covering CSV Template",
-        data=set_covering_template.to_csv(index=False),
-        file_name="set_covering_template.csv",
-        mime="text/csv"
+    st.subheader("Sample Business Scenario")
+
+    st.write(
+        "A business is evaluating four possible service locations that collectively "
+        "need to cover five customer zones. Each location has a different operating "
+        "cost and serves a different combination of zones. Hidden Profit Analytics "
+        "uses mathematical optimization to determine the lowest-cost combination "
+        "of locations that still provides coverage for every required zone."
     )
 
-    with st.expander("How to format your Set Covering data"):
-        st.markdown(
-            """
-            - **Option**: Name of the location, service option, resource, supplier, or other choice.
-            - **Cost**: Cost of selecting that option.
-            - **CurrentSelected**: Enter `1` if the option is currently being used, otherwise `0`.
-            - **Coverage columns**: Add one column for each required location, customer group, route, time period, or item that must be covered.
-            - Enter `1` when an option covers that requirement and `0` when it does not.
+    st.caption(
+        "This scenario uses fictional data created for demonstration purposes."
+    )
 
-            Every required coverage column must be covered by at least one option.
-            """
+    if st.button(
+        "▶ Run Sample Set Covering Scenario",
+        key="run_sample_set_covering"
+    ):
+        st.session_state.set_covering_sample_file = StringIO(
+            set_covering_template.to_csv(index=False)
         )
 
-    set_covering_file = st.file_uploader(
-        "Upload Set Covering Data CSV",
-        type=["csv"],
-        key="set_covering_upload"
-    )
-
-    if (
-        guided_mode
-        and set_covering_file is not None
-        and st.session_state.set_covering_guide_step == 1
-    ):
-        st.session_state.set_covering_guide_step = 2
-        st.rerun()
+    set_covering_file = None
 
     set_covering_guide_placeholder = st.empty()
 
@@ -1337,14 +1365,21 @@ if tool == "Set Covering Optimizer":
         and st.session_state.set_covering_guide_step == 2
     ):
         set_covering_guide_placeholder.info(
-            "⬇️ **Step 2 of 3 — Review Your Optimization Results**\n\n"
-            "Your file has been uploaded. Hidden Profit Analytics will validate "
-            "the data and calculate the lowest-cost coverage plan below."
+            "⬇️ **Step 2 of 3 — Run the Optimization**\n\n"
+            "Hidden Profit Analytics will evaluate the fictional location costs "
+            "and coverage relationships to calculate the lowest-cost plan that "
+            "still covers every required zone."
         )
 
-    if set_covering_file is not None:
+    set_covering_input = set_covering_file
+
+    if set_covering_input is None:
+        set_covering_input = st.session_state.get("set_covering_sample_file")
+
+    if set_covering_input is not None:
         try:
-            results = run_set_covering_optimizer(set_covering_file)
+            set_covering_input.seek(0)
+            results = run_set_covering_optimizer(set_covering_input)
 
             if guided_mode:
                 st.session_state.set_covering_guide_step = 3
