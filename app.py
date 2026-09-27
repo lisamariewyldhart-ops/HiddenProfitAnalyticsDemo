@@ -2821,8 +2821,12 @@ if tool == "Resource Allocation Optimizer":
             st.error(str(error))        
 
 if tool == "Profit Analyzer" and st.session_state.hpa_page == "profit_analyzer":
-    st.title("Hidden Profit Analytics")
-    st.subheader("Business Optimization Dashboard")
+    st.header("💰 Profit Improvement Analysis")
+
+    st.write(
+        "Let's look at your financial performance and determine the most practical "
+        "way to improve profit."
+    )
 
     with st.expander("How to Use the Profit Analyzer", expanded=False):
         st.markdown(
@@ -2922,17 +2926,13 @@ if tool == "Profit Analyzer" and st.session_state.hpa_page == "profit_analyzer":
         and tool == "Profit Analyzer"
         and st.session_state.profit_guide_step == 1
     ):
-        st.sidebar.info(
-            "⬇️ **Step 1 of 4 — Business Information**\n\n"
-            "Enter your company name and target profit margin below."
+        st.info(
+            "**Step 1 of 4 — Tell us about your business**\n\n"
+            "Enter your company name and the profit margin you'd like to achieve."
         )
 
-    st.sidebar.header("Client Setup")
-
-    with st.sidebar.expander(
-        "1. Business Information",
-        expanded=True
-    ):
+    with st.container(border=True):
+        st.subheader("Business Information")
 
         company_name = st.text_input(
             "Company Name",
@@ -2977,16 +2977,15 @@ if tool == "Profit Analyzer" and st.session_state.hpa_page == "profit_analyzer":
         guided_mode
         and st.session_state.profit_guide_step == 2
     ):
-        st.sidebar.info(
-            "⬇️ **Step 2 of 4 — Financial Data**\n\n"
-            "Download the CSV template, enter your financial data, "
-            "then upload the completed file below."
+        st.info(
+            "**Step 2 of 4 — Add your financial data**\n\n"
+            "Download the CSV template if needed, enter your monthly financial data, "
+            "then upload the completed file."
         )
 
-    with st.sidebar.expander(
-        "2. Financial Data",
-        expanded=True
-    ):
+    with st.container(border=True):
+        st.subheader("Financial Data")
+
         csv_template = (
             "Month,Revenue,Expenses\n"
             "January,30000,26000\n"
@@ -3031,16 +3030,14 @@ if tool == "Profit Analyzer" and st.session_state.hpa_page == "profit_analyzer":
         guided_mode
         and st.session_state.profit_guide_step == 3
     ):
-        st.sidebar.info(
-            "⬇️ **Step 3 of 4 — Improvement Assumptions**\n\n"
-            "Review and adjust the assumptions below to reflect "
-            "realistic improvements for this business."
+        st.info(
+            "**Step 3 of 4 — Set realistic improvement assumptions**\n\n"
+            "Estimate what improvements are realistically achievable for this business. "
+            "These assumptions will help HPA determine the most practical path to improved profit."
         )
 
-    with st.sidebar.expander(
-        "3. Improvement Assumptions",
-        expanded=False
-    ):
+    with st.container(border=True):
+        st.subheader("Improvement Assumptions")
 
         st.caption(
             "Estimate what improvements are realistically achievable for "
@@ -3203,26 +3200,19 @@ if tool == "Profit Analyzer" and st.session_state.hpa_page == "profit_analyzer":
             use_container_width=True
         )
 
-        step4_guide_placeholder = st.sidebar.empty()
+        step4_guide_placeholder = st.empty()
 
         if (
             guided_mode
             and st.session_state.profit_guide_step == 4
         ):
             step4_guide_placeholder.info(
-                "⬇️ **Step 4 of 4 — Run Your Analysis**\n\n"
-                "Review your setup, then click **4. Run Analysis** below "
-                "to generate your recommendations."
+                "**Step 4 of 4 — Run your analysis**\n\n"
+                "Review your information and assumptions, then run the analysis "
+                "to generate HPA's profit improvement recommendations."
             )
 
-        st.sidebar.divider()
-
-        st.sidebar.caption(
-            "Review the client information, financial data, "
-            "and improvement assumptions before running the analysis."
-        )
-
-        guide_complete_placeholder = st.sidebar.empty()
+        guide_complete_placeholder = st.empty()
 
         if (
             guided_mode
@@ -3235,11 +3225,18 @@ if tool == "Profit Analyzer" and st.session_state.hpa_page == "profit_analyzer":
                 "the client report when you're ready."
             )
 
-        if st.sidebar.button(
-            "4. Run Analysis",
-            type="primary",
-            use_container_width=True
-        ):
+        run_button_placeholder = st.empty()
+
+        run_analysis_clicked = False
+
+        if not st.session_state.get("analysis_ready", False):
+            run_analysis_clicked = run_button_placeholder.button(
+                "4. Run Analysis",
+                type="primary",
+                use_container_width=True
+            )
+
+        if run_analysis_clicked:
 
             # Clear results from any previous analysis
             st.session_state.analysis_ready = False
@@ -3335,14 +3332,7 @@ if tool == "Profit Analyzer" and st.session_state.hpa_page == "profit_analyzer":
                 f"{largest_opportunity['Month']} has the largest profit gap at "
                 f"**${profit_gap:,.2f}**."
             )
-            st.write(
-                f"{largest_opportunity['Month']} has the largest "
-                f"profit opportunity at "
-                f"${profit_gap:,.2f}."
-            )
-
-
-
+          
             st.markdown("## Monthly Performance")
 
             st.caption(
@@ -3434,11 +3424,12 @@ if tool == "Profit Analyzer" and st.session_state.hpa_page == "profit_analyzer":
                     "Max Expense Reduction",
                     f"${max_expense_reduction:,.0f}"
                 )
-            st.markdown("## Custom Optimization Recommendation")
+            st.markdown("## Recommended Profit Improvement Plan")
 
             st.caption(
-                "Based on the client-specific assumptions, the optimizer identifies "
-                "the lowest-cost feasible way to close the priority profit gap."
+                "Based on your business assumptions, HPA identifies the lowest-cost "
+                "feasible combination of revenue growth and expense reduction to "
+                "address the priority profit gap."
             )
 
             if optimization_result.success:
@@ -3481,8 +3472,8 @@ if tool == "Profit Analyzer" and st.session_state.hpa_page == "profit_analyzer":
                 if expense_cost < revenue_cost:
                     recommendation_reason = (
                         f"Expense reduction is prioritized because it is estimated to cost "
-                        f"${expense_cost:.2f} for each $1 of profit improvement, compared with "
-                        f"${revenue_cost:.2f} for each $1 generated through additional revenue. "
+                        f"\\${expense_cost:.2f} for each \\$1 of profit improvement, compared with "
+                        f"\\${revenue_cost:.2f} for each \\$1 generated through additional revenue. "
                         f"The optimizer therefore uses the lower-cost opportunity first, "
                         f"subject to the realistic limits entered for this business."
                     )
@@ -3490,8 +3481,8 @@ if tool == "Profit Analyzer" and st.session_state.hpa_page == "profit_analyzer":
                 elif revenue_cost < expense_cost:
                     recommendation_reason = (
                         f"Revenue growth is prioritized because it is estimated to cost "
-                        f"${revenue_cost:.2f} for each $1 of profit improvement, compared with "
-                        f"${expense_cost:.2f} for each $1 achieved through expense reduction. "
+                        f"\\${revenue_cost:.2f} for each \\$1 of profit improvement, compared with "
+                        f"\\${expense_cost:.2f} for each \\$1 achieved through expense reduction. "
                         f"The optimizer therefore uses the lower-cost opportunity first, "
                         f"subject to the realistic limits entered for this business."
                     )
@@ -3499,7 +3490,7 @@ if tool == "Profit Analyzer" and st.session_state.hpa_page == "profit_analyzer":
                 else:
                     recommendation_reason = (
                         f"Revenue growth and expense reduction have the same estimated "
-                        f"implementation cost of ${revenue_cost:.2f} per $1 of profit "
+                        f"implementation cost of \\${revenue_cost:.2f} per \\$1 of profit "
                         f"improvement. The recommended mix therefore depends primarily on "
                         f"the realistic improvement limits entered for this business."
                     )
@@ -3566,7 +3557,7 @@ if tool == "Profit Analyzer" and st.session_state.hpa_page == "profit_analyzer":
 
                     roi_col4.metric(
                         "Estimated Payback",
-                        f"{payback_months:.2f} months"
+                        f"{payback_months * 30:.0f} days" if payback_months < 1 else f"{payback_months:.1f} months"
                     )
 
                 else:
@@ -3588,7 +3579,9 @@ if tool == "Profit Analyzer" and st.session_state.hpa_page == "profit_analyzer":
                         f"\\${implementation_cost:,.2f}. "
                         f"That represents a {benefit_cost_ratio:.2f}x benefit-cost ratio "
                         f"and an estimated payback period of "
-                        f"{payback_months:.2f} months."
+                        f"{payback_months * 30:.0f} days."
+                        if payback_months < 1
+                        else f"{payback_months:.1f} months."
                     )
                 else:
                     st.success(
@@ -3611,10 +3604,12 @@ if tool == "Profit Analyzer" and st.session_state.hpa_page == "profit_analyzer":
                     f"\\${remaining_gap:,.2f}."
                 )
 
-            st.markdown("## Predefined Scenario Comparison")
+            st.markdown("## Alternative Strategy Comparison")
 
             st.caption(
-                "These scenarios use the assumptions stored in scenarios.csv."
+                "HPA also evaluated alternative combinations of revenue growth and "
+                "expense reduction to compare their estimated implementation costs "
+                "with the recommended plan."
             )
 
             scenarios = pd.read_csv("scenarios.csv")
@@ -3688,7 +3683,7 @@ if tool == "Profit Analyzer" and st.session_state.hpa_page == "profit_analyzer":
                     best_index
                 ]
 
-                st.markdown("### Lowest-Cost Predefined Scenario")
+                st.markdown("### Best Alternative Strategy")
 
                 col1, col2, col3, col4 = st.columns(4)
 
@@ -3713,15 +3708,13 @@ if tool == "Profit Analyzer" and st.session_state.hpa_page == "profit_analyzer":
                 )
 
                 st.info(
-                    f"Lowest-cost predefined scenario: "
-                    f"{best_scenario['Scenario']} with an "
-                    f"estimated implementation cost of "
-                    f"\\${best_scenario['Implementation Cost']:,.2f}. "
-                    f"This is shown for comparison; the custom optimization above "
-                    f"is the primary client recommendation."
+                    f"Of the alternative strategies evaluated, "
+                    f"{best_scenario['Scenario']} has the lowest estimated implementation cost "
+                    f"at \\${best_scenario['Implementation Cost']:,.2f}. "
+                    f"This provides a useful comparison with HPA's recommended profit improvement plan above."
                 )
 
-                st.markdown("### Predefined Scenario Cost Comparison")
+                st.markdown("### Alternative Strategy Cost Comparison")
 
                 create_scenario_cost_chart(
                     scenario_results_df,
@@ -3741,6 +3734,7 @@ if tool == "Profit Analyzer" and st.session_state.hpa_page == "profit_analyzer":
             # Save successful analysis for later Streamlit reruns
             if optimization_result.success and not feasible_results.empty:
                 st.session_state.analysis_ready = True
+                run_button_placeholder.empty()
                 st.session_state.analyzed_data = analyzed_data
                 st.session_state.total_revenue = total_revenue
                 st.session_state.total_profit = total_profit
@@ -3830,8 +3824,8 @@ if tool == "Profit Analyzer" and st.session_state.hpa_page == "profit_analyzer":
 
             sensitivity_display = sensitivity_display.rename(
                 columns={
-                    "Revenue Cost Change": "Revenue Cost",
-                    "Expense Cost Change": "Expense Cost",
+                    "Revenue Cost Change": "Revenue Cost Assumption",
+                    "Expense Cost Change": "Expense Cost Assumption",
                     "Revenue Increase": "Revenue Increase",
                     "Expense Reduction": "Expense Reduction",
                     "Implementation Cost": "Impl. Cost"
@@ -3849,8 +3843,8 @@ if tool == "Profit Analyzer" and st.session_state.hpa_page == "profit_analyzer":
 
             sensitivity_display = sensitivity_display[
                 [
-                    "Revenue Cost",
-                    "Expense Cost",
+                    "Revenue Cost Assumption",
+                    "Expense Cost Assumption",
                     "Revenue Increase",
                     "Expense Reduction",
                     "Impl. Cost"
@@ -3902,9 +3896,9 @@ if tool == "Profit Analyzer" and st.session_state.hpa_page == "profit_analyzer":
                     ]
 
                     st.success(
-                        f"Robust Recommendation: The optimal strategy remains unchanged "
+                        f"Robust Recommendation: The recommended strategy remains unchanged "
                         f"across all tested ±{sensitivity_percent}% "
-                        f"implementation-cost assumptions."
+                        f"implementation-cost assumptions. "
                         f"The model consistently recommends "
                         f"\\${stable_expense:,.2f} in expense reduction and "
                         f"\\${stable_revenue:,.2f} in additional revenue. "
@@ -3934,8 +3928,8 @@ if tool == "Profit Analyzer" and st.session_state.hpa_page == "profit_analyzer":
             st.markdown("## Follow-Up Results")
 
             st.caption(
-                "Compare actual post-implementation results with the original "
-                "optimization recommendation."
+                "Compare actual post-implementation results with HPA's original "
+                "recommended profit improvement plan."
             )
 
             with st.expander(
@@ -4025,9 +4019,14 @@ if tool == "Profit Analyzer" and st.session_state.hpa_page == "profit_analyzer":
                     f"${actual_profit_improvement:,.2f}"
                 )
 
+                difference_display = (
+                    f"-${abs(improvement_variance):,.2f}"
+                    if improvement_variance < 0
+                    else f"${improvement_variance:,.2f}"
+                )
+
                 st.caption(
-                    f"Variance from recommendation: "
-                    f"${improvement_variance:,.2f}"
+                    f"Difference from recommendation: {difference_display}"
                 )
 
                 col3.metric(
@@ -4054,7 +4053,7 @@ if tool == "Profit Analyzer" and st.session_state.hpa_page == "profit_analyzer":
                     st.warning(
                         f"Actual improvement is "
                         f"${remaining_gap:,.2f} below the original recommendation. "
-                        f"A follow-up optimization may be useful."
+                        f"Additional action may be needed to close the remaining profit gap."
                     )
 
                     follow_up_result = optimize_profit_improvement(
@@ -4071,11 +4070,11 @@ if tool == "Profit Analyzer" and st.session_state.hpa_page == "profit_analyzer":
                         follow_up_expense = follow_up_result.x[1]
                         follow_up_cost = follow_up_result.fun
 
-                        st.markdown("### Follow-Up Optimization Recommendation")
+                        st.markdown("### Recommended Next Step")
 
                         st.caption(
-                            "Lowest-cost additional improvement needed to close "
-                            "the remaining profit gap."
+                            "Based on the actual results, HPA identified the most "
+                            "cost-effective next step to close the remaining profit gap."
                         )
 
                         col1, col2, col3 = st.columns(3)
@@ -4096,10 +4095,9 @@ if tool == "Profit Analyzer" and st.session_state.hpa_page == "profit_analyzer":
                         )
 
                         st.success(
-                            f"To close the remaining ${remaining_gap:,.2f} gap, "
-                            f"the optimizer recommends approximately "
-                            f"${follow_up_expense:,.2f} in additional monthly "
-                            f"expense reduction and ${follow_up_revenue:,.2f} "
+                            f"To close the remaining \\${remaining_gap:,.2f} profit gap, "
+                            f"HPA recommends an additional \\${follow_up_expense:,.2f} "
+                            f"in monthly expense reduction and \\${follow_up_revenue:,.2f} "
                             f"in additional monthly revenue."
                         )
 
@@ -4122,8 +4120,8 @@ if tool == "Profit Analyzer" and st.session_state.hpa_page == "profit_analyzer":
 
             st.caption(
                 "Generate a client-ready PDF containing the financial analysis, "
-                "custom optimization recommendation, predefined scenario comparison, "
-                "optimization assumptions, and management action plan."
+                "recommended profit improvement plan, alternative strategy comparison, "
+                "business assumptions, and management action plan."
             )
 
             if st.button(
@@ -4167,7 +4165,4 @@ if tool == "Profit Analyzer" and st.session_state.hpa_page == "profit_analyzer":
                     use_container_width=True
                 )
 
-        else:
-            st.info(
-                "Upload a CSV containing Month, Revenue, and Expenses."
-            )            
+       

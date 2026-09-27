@@ -97,7 +97,7 @@ def create_pdf_report(
 
     story.append(
         Paragraph(
-            f"{company_name} - Profit Opportunity & Optimization Report",
+            f"{company_name} - Profit Improvement Analysis & Recommendation",
             styles["Heading2"]
         )
     )
@@ -123,9 +123,9 @@ def create_pdf_report(
         f"{largest_opportunity['Month']} represents the largest "
         f"hidden profit opportunity at "
         f"${largest_opportunity['Profit Opportunity']:,.2f}. "
-        f"The custom optimization model provides the "
-        f"lowest-cost feasible strategy for closing this profit gap "
-        f"under the selected client assumptions. "
+        f"Hidden Profit Analytics identified the most cost-effective "
+        f"strategy for closing this profit gap based on the business "
+        f"information and assumptions provided. "
         f"The recommended strategy calls for "
         f"${best_scenario['Revenue Increase']:,.2f} in additional revenue "
         f"and ${best_scenario['Expense Reduction']:,.2f} in expense reduction, "
@@ -155,7 +155,7 @@ def create_pdf_report(
                     f"Close {largest_opportunity['Month']}'s "
                     f"${largest_opportunity['Profit Opportunity']:,.2f} "
                     f"profit gap using the "
-                    f"<b>custom optimized strategy</b>: "
+                    f"<b>recommended profit improvement plan</b>: "
                     f"${best_scenario['Expense Reduction']:,.2f} in "
                     f"expense reduction and "
                     f"${best_scenario['Revenue Increase']:,.2f} in "
@@ -256,7 +256,7 @@ def create_pdf_report(
         [
             f"{largest_opportunity['Month']} "
             f"(${largest_opportunity['Profit Opportunity']:,.2f})",
-            "Custom Optimization"
+            "HPA Recommended Plan"
         ]
     ]
 
@@ -351,7 +351,7 @@ def create_pdf_report(
 
     story.append(
         Paragraph(
-            "Predefined Scenario Cost Comparison",
+            "Alternative Strategy Cost Comparison",
             styles["Heading2"]
         )
     )
@@ -372,15 +372,15 @@ def create_pdf_report(
 
     story.append(
         Paragraph(
-            "Optimization Assumptions",
+            "Business Assumptions & Constraints",
             styles["Heading2"]
         )
     )
 
     story.append(
         Paragraph(
-            "The optimization model uses the following client-specific "
-            "assumptions to determine the recommended strategy.",
+            "The following business assumptions and constraints were used "
+            "to develop the recommended profit improvement plan.",
             styles["BodyText"]
         )
     )
@@ -389,10 +389,22 @@ def create_pdf_report(
 
     assumptions_data = [
         [
-            "Revenue Cost / $1",
-            "Expense Cost / $1",
-            "Max Revenue Increase",
-            "Max Expense Reduction"
+            Paragraph(
+                "<b>Cost per $1<br/>Revenue Increase</b>",
+                styles["BodyText"]
+            ),
+            Paragraph(
+                "<b>Cost per $1<br/>Expense Reduction</b>",
+                styles["BodyText"]
+            ),
+            Paragraph(
+                "<b>Max Revenue<br/>Increase</b>",
+                styles["BodyText"]
+            ),
+            Paragraph(
+                "<b>Max Expense<br/>Reduction</b>",
+                styles["BodyText"]
+            )
         ],
         [
             f"${revenue_cost:.2f}",
@@ -437,7 +449,7 @@ def create_pdf_report(
 
     story.append(
         Paragraph(
-            "Recommended Strategy",
+            "Recommended Profit Improvement Plan",
             styles["Heading2"]
         )
     )
@@ -479,12 +491,11 @@ def create_pdf_report(
     story.append(Spacer(1, 0.15 * inch))
 
     business_impact = (
-        f"<b>Business Impact:</b> The recommended "
-        f"{best_scenario['Scenario']} strategy closes "
-        f"{largest_opportunity['Month']}'s "
+        f"<b>Business Impact:</b> The recommended profit improvement plan "
+        f"closes {largest_opportunity['Month']}'s "
         f"${largest_opportunity['Profit Opportunity']:,.2f} profit gap "
         f"at the lowest estimated implementation cost. "
-        f"The model recommends "
+        f"Hidden Profit Analytics recommends "
         f"${best_scenario['Expense Reduction']:,.2f} in expense reduction "
         f"and ${best_scenario['Revenue Increase']:,.2f} in additional revenue."
     )
@@ -502,8 +513,8 @@ def create_pdf_report(
             f"<b>Why This Strategy:</b> Expense reduction is prioritized because "
             f"its estimated implementation cost is ${expense_cost:.2f} per $1 of "
             f"profit improvement, compared with ${revenue_cost:.2f} per $1 through "
-            f"additional revenue. The model therefore uses the lower-cost expense "
-            f"reduction opportunity first, subject to the client's realistic limits, "
+            f"additional revenue. The recommended plan therefore prioritizes the lower-cost "
+            f"expense reduction opportunity, subject to the client's realistic limits, "
             f"and then uses additional revenue to close any remaining profit gap."
         )
 
@@ -512,8 +523,8 @@ def create_pdf_report(
             f"<b>Why This Strategy:</b> Revenue growth is prioritized because "
             f"its estimated implementation cost is ${revenue_cost:.2f} per $1 of "
             f"profit improvement, compared with ${expense_cost:.2f} per $1 through "
-            f"expense reduction. The model therefore uses the lower-cost revenue "
-            f"opportunity first, subject to the client's realistic limits, "
+            f"expense reduction. The recommended plan therefore prioritizes the lower-cost "
+            f"revenue opportunity, subject to the client's realistic limits, "
             f"and then uses expense reduction to close any remaining profit gap."
         )
 
@@ -564,6 +575,14 @@ def create_pdf_report(
         benefit_cost_ratio = None
         payback_months = 0
 
+    if implementation_cost > 0:
+        if payback_months < 1:
+            payback_days = round(payback_months * 30)
+            payback_display = f"{payback_days} day" if payback_days == 1 else f"{payback_days} days"
+        else:
+            payback_display = f"{payback_months:.2f} months"
+    else:
+        payback_display = "Immediate"   
 
     story.append(
         Paragraph(
@@ -607,11 +626,7 @@ def create_pdf_report(
                 if benefit_cost_ratio is not None
                 else "No Cost"
             ),
-            (
-                f"{payback_months:.2f} months"
-                if implementation_cost > 0
-                else "Immediate"
-            )
+            payback_display
         ]
     ]
 
@@ -647,7 +662,7 @@ def create_pdf_report(
             f"improvement for an estimated implementation cost of "
             f"${implementation_cost:,.2f}. This represents a "
             f"{benefit_cost_ratio:.2f}x benefit-cost ratio and an estimated "
-            f"payback period of {payback_months:.2f} months."
+            f"payback period of {payback_display}."
         )
     else:
         roi_summary = (
@@ -748,10 +763,10 @@ def create_pdf_report(
         if strategy_changes == 0:
 
             robustness_summary = (
-                f"<b>Robust Recommendation:</b> The optimal strategy remained "
+                f"<b>Robust Recommendation:</b> The recommended strategy remained "
                 f"unchanged across all {scenarios_tested} tested "
                 f"+/-{sensitivity_percent}% implementation-cost scenarios. "
-                f"The model consistently recommended "
+                f"Hidden Profit Analytics consistently recommends "
                 f"${best_scenario['Expense Reduction']:,.2f} in "
                 f"monthly expense reduction and "
                 f"${best_scenario['Revenue Increase']:,.2f} in additional "
@@ -765,7 +780,7 @@ def create_pdf_report(
         else:
 
             robustness_summary = (
-                f"<b>Sensitivity Detected:</b> The optimal strategy changed "
+                f"<b>Sensitivity Detected:</b> The recommended strategy changed "
                 f"under some of the {scenarios_tested} tested "
                 f"+/-{sensitivity_percent}% implementation-cost scenarios. "
                 f"Estimated implementation cost ranged from "
@@ -830,7 +845,7 @@ def create_pdf_report(
         Paragraph(
             f"Prioritize improvement actions whose combined "
             f"implementation cost remains near or below the "
-            f"modeled ${best_scenario['Implementation Cost']:,.2f}.",
+            f"recommended ${best_scenario['Implementation Cost']:,.2f} budget.",
             styles["BodyText"]
         )
     ],
@@ -888,8 +903,8 @@ def create_pdf_report(
 
     story.append(
         Paragraph(
-            "A phased implementation plan for translating the optimization "
-            "recommendation into measurable financial results.",
+            "A phased implementation plan for turning the recommended profit "
+            "improvement plan into measurable financial results.",
             styles["BodyText"]
         )
     )
@@ -919,10 +934,10 @@ def create_pdf_report(
             Paragraph("<b>Days 31-60</b>", styles["BodyText"]),
             Paragraph("<b>Implement</b>", styles["BodyText"]),
             Paragraph(
-                f"Execute the selected cost-reduction and revenue initiatives. "
-                f"Track implementation spending against the modeled "
-                f"${best_scenario['Implementation Cost']:,.2f} implementation "
-                f"cost and document actual financial results.",
+            f"Execute the selected cost-reduction and revenue initiatives. "
+            f"Track implementation spending against the recommended "
+            f"${best_scenario['Implementation Cost']:,.2f} implementation "
+            f"budget and document actual financial results.",
                 styles["BodyText"]
             )
         ],
@@ -931,7 +946,7 @@ def create_pdf_report(
             Paragraph("<b>Measure</b>", styles["BodyText"]),
             Paragraph(
                 f"Compare actual revenue, expenses, profit margin, and "
-                f"implementation cost with the optimization targets. "
+                f"implementation cost with the recommended targets. "
                 f"Re-run Hidden Profit Analytics to measure progress toward "
                 f"the {target_margin:.0%} target profit margin and identify "
                 f"the next improvement opportunity.",
@@ -1048,8 +1063,8 @@ def create_scenario_cost_chart(
         feasible_chart_data["Implementation Cost"]
     )
 
-    plt.title("Implementation Cost by Predefined Scenario")
-    plt.xlabel("Scenario")
+    plt.title("Implementation Cost by Alternative Strategy")
+    plt.xlabel("Strategy")
     plt.ylabel("Implementation Cost ($)")
 
     for bar in scenario_bars:
